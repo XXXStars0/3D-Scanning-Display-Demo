@@ -254,6 +254,18 @@ model-viewer {
     margin-top: 20px;
 }
 
+.footer a.repo-link {
+    color: #ffaa00; /* Gold color */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.footer a.repo-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
 /* Responsive Layout */
 @media (max-width: 900px) {
     .container {
