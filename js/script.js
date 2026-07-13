@@ -20,13 +20,46 @@ async function initializeWebsite() {
             document.querySelector('.banner').style.backgroundImage = `url('${data.bannerUrl}')`;
         }
 
-        // 3. Setup 3D Model Viewer
+        // 3. Apply Theme Configuration
+        if (data.theme) {
+            if (data.theme.colors) {
+                Object.entries(data.theme.colors).forEach(([key, value]) => {
+                    document.documentElement.style.setProperty(`--mc-${key}`, value);
+                });
+            }
+            if (data.theme.fonts) {
+                let customStyles = "";
+                const applyFont = (fontConfig, cssVar) => {
+                    if (!fontConfig) return;
+                    if (fontConfig.type === "google") {
+                        const link = document.createElement('link');
+                        link.href = `https://fonts.googleapis.com/css2?family=${fontConfig.family.replace(/ /g, '+')}&display=swap`;
+                        link.rel = "stylesheet";
+                        document.head.appendChild(link);
+                        document.documentElement.style.setProperty(cssVar, `'${fontConfig.family}', sans-serif`);
+                    } else if (fontConfig.type === "local") {
+                        customStyles += `@font-face { font-family: '${fontConfig.family}'; src: url('${fontConfig.url}'); }\n`;
+                        document.documentElement.style.setProperty(cssVar, `'${fontConfig.family}', sans-serif`);
+                    }
+                };
+                applyFont(data.theme.fonts.title, '--font-title');
+                applyFont(data.theme.fonts.body, '--font-body');
+                
+                if (customStyles) {
+                    const styleTag = document.createElement('style');
+                    styleTag.innerHTML = customStyles;
+                    document.head.appendChild(styleTag);
+                }
+            }
+        }
+
+        // 4. Setup 3D Model Viewer
         const modelViewer = document.getElementById('model-viewer');
         if (data.modelUrl) {
             modelViewer.src = data.modelUrl;
         }
 
-        // 4. Generate Image Gallery (6 faces of the item)
+        // 5. Generate Image Gallery (6+ faces of the item)
         const galleryGrid = document.getElementById('gallery-grid');
         
         data.images.forEach(imgData => {

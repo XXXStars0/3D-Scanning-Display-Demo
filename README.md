@@ -68,9 +68,21 @@ You do not need to modify any HTML or JS files to change the displayed content. 
       "description": "Optional text that appears on hover and in the modal."
     }
     // Add as many image objects as you want! The gallery automatically adds a scrollbar.
-  ]
+  ],
+  "theme": {
+    "colors": {
+      "bg-color": "#c6c6c6",
+      "text-dark": "#3f3f3f"
+    },
+    "fonts": {
+      "title": { "type": "local", "family": "MinecraftTitle", "url": "fonts/...ttf" },
+      "body": { "type": "google", "family": "Press Start 2P" }
+    }
+  }
 }
 ```
+
+*Note: The `theme` block dynamically overrides CSS variables, allowing you to easily reskin the entire page and swap fonts (both local files and Google Fonts) without touching `style.css`!*
 
 ## 🤖 AI Guide Integration (Pure Frontend)
 

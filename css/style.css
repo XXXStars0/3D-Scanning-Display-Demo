@@ -1,13 +1,4 @@
-/* Load custom fonts */
-@font-face {
-    font-family: 'MinecraftTitle';
-    src: url('../fonts/minecraft_pe/MINECRAFT PE.ttf') format('truetype');
-}
-
-@font-face {
-    font-family: 'MinecraftBody';
-    src: url('../fonts/Minecraft_Pixel_Font.ttf') format('truetype');
-}
+/* Fonts and Theme are now dynamically injected by js/script.js via data.json */
 
 /* Define Minecraft-like CSS Variables */
 :root {
@@ -16,6 +7,10 @@
     --mc-border-dark: #555555;    /* Shadow border */
     --mc-text-dark: #3f3f3f;      /* Dark text color for GUI */
     --mc-text-light: #ffffff;     /* Light text color */
+    
+    /* Font Families */
+    --font-title: 'MinecraftTitle', sans-serif;
+    --font-body: 'MinecraftBody', sans-serif;
 }
 
 body {
@@ -34,7 +29,7 @@ body {
     background-attachment: fixed; /* Creates the parallax scrolling effect */
     /* The footer and banner have their own opaque backgrounds, so this naturally acts as the main body background */
     color: var(--mc-text-dark);
-    font-family: 'MinecraftBody', sans-serif;
+    font-family: var(--font-body);
     font-size: 1rem;
     line-height: 1.4;
     min-height: 100vh;
@@ -61,7 +56,7 @@ body {
     margin: 0;
     color: #ffaa00; /* Gold color */
     text-shadow: 3px 3px 0 #3f3f3f;
-    font-family: 'MinecraftTitle', sans-serif;
+    font-family: var(--font-title);
     font-size: 2.5rem;
 }
 
@@ -115,7 +110,7 @@ body {
 }
 
 .panel h2 {
-    font-family: 'MinecraftTitle', sans-serif;
+    font-family: var(--font-title);
     margin-top: 0;
     margin-bottom: 10px;
     color: var(--mc-text-dark);
@@ -259,7 +254,7 @@ model-viewer {
     color: var(--mc-text-light);
     padding: 10px 0;
     font-size: 1.5rem;
-    font-family: 'MinecraftTitle', sans-serif;
+    font-family: var(--font-title);
     text-shadow: 2px 2px 0 #000;
 }
 
@@ -271,7 +266,7 @@ model-viewer {
     font-size: 40px;
     font-weight: bold;
     cursor: pointer;
-    font-family: 'MinecraftTitle', sans-serif;
+    font-family: var(--font-title);
     transition: color 0.2s;
 }
 
@@ -332,7 +327,7 @@ model-viewer {
     border-bottom-color: var(--mc-border-dark);
     border-right-color: var(--mc-border-dark);
     color: var(--mc-text-light);
-    font-family: 'MinecraftBody', sans-serif;
+    font-family: var(--font-body);
     padding: 8px 15px;
     cursor: pointer;
     font-size: 1rem;
@@ -360,7 +355,7 @@ model-viewer {
     background-color: #111;
     border: 2px solid var(--mc-border-dark);
     color: #fff;
-    font-family: 'MinecraftBody', sans-serif;
+    font-family: var(--font-body);
     padding: 10px;
     width: 100%;
     box-sizing: border-box;
@@ -480,7 +475,7 @@ model-viewer {
     left: 50%;
     margin-left: -60px;
     margin-bottom: 10px;
-    font-family: 'MinecraftBody', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.8rem;
     box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
     opacity: 0;
@@ -532,7 +527,7 @@ model-viewer {
 
 .chat-header h2 {
     color: var(--mc-text-dark);
-    font-family: 'MinecraftTitle', sans-serif;
+    font-family: var(--font-title);
     font-size: 1.2rem;
 }
 

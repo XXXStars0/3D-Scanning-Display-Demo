@@ -14,5 +14,26 @@
     { "id": "etch", "src": "img/Happy_Ghast_With_Etch_A_Sketch.jpeg", "label": "Etch A Sketch", "description": "Happy Ghast creating art on an Etch A Sketch." },
     { "id": "museum", "src": "img/Happy_Ghast_in_museum.jpeg", "label": "Museum Exhibit", "description": "Happy ghast is watching an aquarium." },
     { "id": "flower", "src": "img/Happy_Ghast_with_dandelion_flower.jpeg", "label": "Dandelion Flower", "description": "Enjoying a fresh dandelion flower in the wild." }
-  ]
+  ],
+  "theme": {
+    "colors": {
+      "bg-color": "#c6c6c6",
+      "border-light": "#ffffff",
+      "border-dark": "#555555",
+      "text-dark": "#3f3f3f",
+      "text-light": "#ffffff"
+    },
+    "fonts": {
+      "title": {
+        "type": "local",
+        "family": "MinecraftTitle",
+        "url": "fonts/minecraft_pe/MINECRAFT PE.ttf"
+      },
+      "body": {
+        "type": "local",
+        "family": "MinecraftBody",
+        "url": "fonts/Minecraft_Pixel_Font.ttf"
+      }
+    }
+  }
 }
