@@ -49,8 +49,33 @@ async function initializeWebsite() {
             item.appendChild(img);
             item.appendChild(label);
             
+            // Setup global floating tooltip
+            if (imgData.description) {
+                const globalTooltip = document.getElementById('global-tooltip');
+                item.addEventListener('mouseenter', () => {
+                    globalTooltip.innerHTML = imgData.description;
+                    globalTooltip.classList.remove('hidden');
+                });
+                item.addEventListener('mousemove', (e) => {
+                    let x = e.clientX + 15;
+                    let y = e.clientY + 15;
+                    // Keep tooltip within viewport bounds
+                    if (x + globalTooltip.offsetWidth > window.innerWidth) {
+                        x = e.clientX - globalTooltip.offsetWidth - 10;
+                    }
+                    if (y + globalTooltip.offsetHeight > window.innerHeight) {
+                        y = e.clientY - globalTooltip.offsetHeight - 10;
+                    }
+                    globalTooltip.style.left = x + 'px';
+                    globalTooltip.style.top = y + 'px';
+                });
+                item.addEventListener('mouseleave', () => {
+                    globalTooltip.classList.add('hidden');
+                });
+            }
+            
             // Add click listener to open the modal preview
-            item.addEventListener('click', () => openImageModal(imgData.src, imgData.label));
+            item.addEventListener('click', () => openImageModal(imgData.src, imgData.label, imgData.description));
 
             galleryGrid.appendChild(item);
         });
@@ -68,11 +93,11 @@ const modalImg = document.getElementById("modal-img");
 const captionText = document.getElementById("modal-caption");
 const closeBtn = document.getElementById("close-modal");
 
-// Opens the modal with the specified image source and caption
-function openImageModal(src, caption) {
+// Opens the modal with the specified image source, caption, and description
+function openImageModal(src, caption, description) {
     modal.style.display = "block";
     modalImg.src = src;
-    captionText.textContent = caption;
+    captionText.innerHTML = `<strong>${caption}</strong><br><span style="font-size: 0.85em; color: #ccc;">${description || ''}</span>`;
 }
 
 // Close the modal when the 'X' button is clicked

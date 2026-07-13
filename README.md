@@ -15,7 +15,7 @@ A lightweight, fully responsive frontend demo designed to elegantly display 3D s
 
 * **Interactive 3D Preview:** Utilizes Google's `<model-viewer>` component for native, high-performance `.glb` rendering with orbit and zoom controls.
 * **Decoupled Configuration:** Text, image paths, and model URLs are completely separated from the code via a `data.json` configuration file, making updates effortless.
-* **Orthographic Gallery:** A responsive grid to preview the specimen from all 6 axis angles. Clicking on any thumbnail opens a clean modal overlay for higher resolution viewing.
+* **Photo Gallery:** A scrollable, responsive grid to display an arbitrary number of specimen photos. Hovering over a thumbnail reveals a Minecraft-style tooltip description, and clicking opens a high-res modal overlay.
 * **Minecraft GUI Aesthetic:** Custom styled UI with authentic pixel fonts and embossed panels mimicking classic gaming interfaces.
 * **Lightweight & Vanilla:** Built with pure HTML, CSS, and JavaScript without any heavy frameworks, allowing for instant loading and simple hosting.
 
@@ -61,8 +61,13 @@ You do not need to modify any HTML or JS files to change the displayed content. 
   "modelUrl": "models/Your_Model.glb",
   "bannerUrl": "img/Your_Banner.png",
   "images": [
-    { "id": "front", "src": "img/path_to_front.png", "label": "Front View" }
-    // Add up to 6 image objects here
+    { 
+      "id": "front", 
+      "src": "img/path_to_img.png", 
+      "label": "Front View",
+      "description": "Optional text that appears on hover and in the modal."
+    }
+    // Add as many image objects as you want! The gallery automatically adds a scrollbar.
   ]
 }
 ```

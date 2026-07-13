@@ -4,11 +4,15 @@
   "modelUrl": "models/Happy_Ghast_optimized.glb",
   "bannerUrl": "img/1.21.6_ChaseTheSkies_Header.png",
   "images": [
-    { "id": "front", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Front.png", "label": "Front View" },
-    { "id": "back", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Back.png", "label": "Back View" },
-    { "id": "left", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Left.png", "label": "Left View" },
-    { "id": "right", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Right.png", "label": "Right View" },
-    { "id": "top", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Top.png", "label": "Top View" },
-    { "id": "bottom", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Bottom.png", "label": "Bottom View" }
+    { "id": "front", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Front.png", "label": "Front View", "description": "The front orthographic view of the 3D specimen." },
+    { "id": "back", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Back.png", "label": "Back View", "description": "The back orthographic view showing the rear details." },
+    { "id": "left", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Left.png", "label": "Left View", "description": "Left-side profile of the Kleenex box." },
+    { "id": "right", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Right.png", "label": "Right View", "description": "Right-side profile of the Kleenex box." },
+    { "id": "top", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Top.png", "label": "Top View", "description": "A top-down look at the harnessed ghast." },
+    { "id": "bottom", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Bottom.png", "label": "Bottom View", "description": "The bottom surface of the box." },
+    { "id": "grad", "src": "img/Happy_Ghast_Graduate.JPG", "label": "Graduation", "description": "A proud Happy Ghast posing with a graduation cap." },
+    { "id": "etch", "src": "img/Happy_Ghast_With_Etch_A_Sketch.jpeg", "label": "Etch A Sketch", "description": "Happy Ghast creating art on an Etch A Sketch." },
+    { "id": "museum", "src": "img/Happy_Ghast_in_museum.jpeg", "label": "Museum Exhibit", "description": "Happy ghast is watching an aquarium." },
+    { "id": "flower", "src": "img/Happy_Ghast_with_dandelion_flower.jpeg", "label": "Dandelion Flower", "description": "Enjoying a fresh dandelion flower in the wild." }
   ]
 }
