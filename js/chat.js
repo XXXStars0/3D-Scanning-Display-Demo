@@ -82,7 +82,8 @@ function saveConfig() {
     localStorage.setItem('ai_api_model', activeApiModel);
     
     settingsModal.style.display = 'none';
-    addMessage('System', 'Settings saved successfully! You can now chat.');
+    const msg = window.appConfig?.uiText?.chatSettingsSaved || 'Settings saved successfully! You can now chat.';
+    addMessage('System', msg);
 }
 
 // Fetch knowledge base content
@@ -129,7 +130,8 @@ async function sendMessage() {
     const apiModel = activeApiModel;
 
     if (!apiKey) {
-        addMessage('System', 'Please configure your API Key in the settings (gear icon) first.');
+        const msg = window.appConfig?.uiText?.chatNoApiKey || 'Please configure your API Key in the settings (gear icon) first.';
+        addMessage('System', msg);
         settingsModal.style.display = 'block';
         return;
     }
@@ -141,7 +143,8 @@ async function sendMessage() {
     // Add typing indicator
     const typingMsg = document.createElement('div');
     typingMsg.className = 'chat-message ai-message typing';
-    typingMsg.textContent = '[Guide] typing...';
+    const typingText = window.appConfig?.uiText?.chatTyping || 'typing...';
+    typingMsg.textContent = `[Guide] ${typingText}`;
     chatHistory.appendChild(typingMsg);
     chatHistory.scrollTop = chatHistory.scrollHeight;
 
@@ -151,6 +154,8 @@ async function sendMessage() {
 You are enthusiastic, slightly humorous, and speak in a Minecraft-inspired tone.
 Answer the user's questions about the specimen based strictly on the following Knowledge Base. 
 Do not make up facts outside the knowledge base. Keep your answers concise and engaging.
+
+If you want to focus the 3D camera on a specific view based on what you are talking about, you can output a command in this exact format: [LOOKAT: x-deg y-deg z-m]. For example: [LOOKAT: 45deg 90deg 1.5m]. The 3D camera will automatically move there!
 
 --- KNOWLEDGE BASE ---
 ${knowledgeBase}`;
@@ -208,8 +213,23 @@ ${knowledgeBase}`;
                         const data = JSON.parse(line.slice(6));
                         if (data.choices[0].delta && data.choices[0].delta.content) {
                             rawContent += data.choices[0].delta.content;
+                            
+                            // Check and execute [LOOKAT: ...] camera commands
+                            const lookatRegex = /\[LOOKAT:\s*([^\]]+)\]/g;
+                            let match;
+                            let displayContent = rawContent;
+                            while ((match = lookatRegex.exec(rawContent)) !== null) {
+                                const targetOrbit = match[1];
+                                const modelViewer = document.getElementById('model-viewer');
+                                if (modelViewer) {
+                                    modelViewer.cameraOrbit = targetOrbit;
+                                }
+                                // Remove it from the text shown to user
+                                displayContent = displayContent.replace(match[0], '');
+                            }
+
                             // Re-parse the entire accumulated markdown on each chunk
-                            msgDiv.innerHTML = '<strong>[Guide]</strong> <br>' + marked.parse(rawContent);
+                            msgDiv.innerHTML = '<strong>[Guide]</strong> <br>' + marked.parse(displayContent);
                             chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
                         }
                     } catch (e) {
@@ -222,7 +242,8 @@ ${knowledgeBase}`;
     } catch (error) {
         // Handle and display errors gracefully
         if(chatHistory.contains(typingMsg)) chatHistory.removeChild(typingMsg);
-        addMessage('System', `Connection failed: ${error.message}`);
+        const failText = window.appConfig?.uiText?.chatConnectionFailed || 'Connection failed:';
+        addMessage('System', `${failText} ${error.message}`);
     }
 }
 
@@ -270,8 +291,21 @@ closeChatBtn.addEventListener('click', () => {
 
 clearChatBtn.addEventListener('click', () => {
     chatHistory.innerHTML = '';
-    addMessage('AI', 'Chat cleared! How can I help you?');
+    const msg = window.appConfig?.uiText?.chatCleared || 'Chat cleared! How can I help you?';
+    addMessage('AI', msg);
 });
+
+// Global function to allow script.js to trigger the AI via Hotspots
+window.triggerHotspotAI = function(promptText) {
+    // Open chat panel if closed
+    if (floatingChatPanel.classList.contains('hidden')) {
+        floatingChatPanel.classList.remove('hidden');
+    }
+    
+    // Set input and send
+    chatInput.value = promptText;
+    sendMessage();
+};
 
 // Initialization on load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -279,8 +313,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadEnvConfig(); // 2. Override with .env if present
     populateSettingsForm(); // 3. Sync UI visually just once
     loadKnowledgeBase();
+    
+    // Fetch custom welcome message from data/config.json
+    let welcomeMsg = 'Welcome! I am your AI Museum Guide. How can I help you?';
+    try {
+        const res = await fetch('data/config.json');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.aiWelcomeMessage) {
+                welcomeMsg = data.aiWelcomeMessage;
+            }
+        }
+    } catch (e) {
+        console.warn('Could not load aiWelcomeMessage from data/config.json');
+    }
+
     // Welcome message
     setTimeout(() => {
-        addMessage('AI', 'Welcome! I am your AI Museum Guide. Ask me anything about this Happy Ghast specimen!');
+        addMessage('AI', welcomeMsg);
     }, 500);
 });

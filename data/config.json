@@ -1,8 +1,38 @@
 {
   "title": "Happy Ghast Specimen",
   "description": "A Harnessed happy ghast sit on a tissue paper box. This specimen exhibits unique cute cubic structures. Scanned by RealityComposer, this model captures the intricate details of the features and textures. Perfect for display or educational purposes.",
+  "aiWelcomeMessage": "Welcome! I am your AI Museum Guide. Ask me anything about this Happy Ghast specimen!",
+  "uiText": {
+    "errorLoadConfig": "Error: Failed to load configuration data. Check console for details.",
+    "hotspotHoverPrompt": "Click to ask AI",
+    "modalAskAIPrefix": "Can you tell me more about the photo: ",
+    "modalBtnAskAI": "Ask AI About This",
+    "chatTyping": "typing...",
+    "chatCleared": "Chat cleared! How can I help you?",
+    "chatNoApiKey": "Please configure your API Key in the settings (gear icon) first.",
+    "chatSettingsSaved": "Settings saved successfully! You can now chat.",
+    "chatConnectionFailed": "Connection failed:"
+  },
   "modelUrl": "models/Happy_Ghast_optimized.glb",
   "bannerUrl": "img/1.21.6_ChaseTheSkies_Header.png",
+  "hotspots": [
+    {
+      "slot": "hotspot-face",
+      "position": "-0.015 0.2 0",
+      "normal": "0 0 1",
+      "label": "Happy Ghast Face",
+      "prompt": "Tell me about this closed-eye smiling face. How does it differ from a normal Ghast?",
+      "orbit": "0deg 85deg 1.5m"
+    },
+    {
+      "slot": "hotspot-box",
+      "position": "-0.015 0.05 0.05",
+      "normal": "1 0 0",
+      "label": "Tissue Box Base",
+      "prompt": "What is this tissue box base it is sitting on? Is it a standard Kleenex box?",
+      "orbit": "45deg 75deg 2m"
+    }
+  ],
   "images": [
     { "id": "front", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Front.png", "label": "Front View", "description": "The front orthographic view of the 3D specimen." },
     { "id": "back", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Back.png", "label": "Back View", "description": "The back orthographic view showing the rear details." },

@@ -13,7 +13,7 @@ A lightweight, fully responsive frontend demo designed to elegantly display 3D s
 
 ## ✨ Highlights
 
-* **Interactive 3D Preview:** Utilizes Google's `<model-viewer>` component for native, high-performance `.glb` rendering with orbit and zoom controls.
+* **Interactive 3D Preview & Hotspots:** Utilizes Google's `<model-viewer>` component for native, high-performance `.glb` rendering. Features clickable 3D hotspots that dynamically guide the camera and trigger AI explanations.
 * **Decoupled Configuration:** Text, image paths, and model URLs are completely separated from the code via a `data.json` configuration file, making updates effortless.
 * **Photo Gallery:** A scrollable, responsive grid to display an arbitrary number of specimen photos. Hovering over a thumbnail reveals a Minecraft-style tooltip description, and clicking opens a high-res modal overlay.
 * **Minecraft GUI Aesthetic:** Custom styled UI with authentic pixel fonts and embossed panels mimicking classic gaming interfaces.
@@ -52,12 +52,19 @@ Because this project dynamically loads local JSON data and 3D models, it must be
 
 ### How to Configure Content
 
-You do not need to modify any HTML or JS files to change the displayed content. Simply edit the `js/data.json` file:
+You do not need to modify any HTML or JS files to change the displayed content. All configurations (texts, images, UI strings) have been extracted to a central configuration file.
+
+Simply edit `data/config.json`:
 
 ```json
 {
   "title": "Happy Ghast Specimen",
-  "description": "Your detailed description here...",
+  "aiWelcomeMessage": "Welcome! I am your AI Museum Guide...",
+  "uiText": {
+    "sectionModel": "Interactive 3D Model",
+    "modalBtnAskAI": "Ask AI About This"
+    // ... all UI strings can be localized or changed here
+  },
   "modelUrl": "models/Your_Model.glb",
   "bannerUrl": "img/Your_Banner.png",
   "images": [
@@ -67,7 +74,16 @@ You do not need to modify any HTML or JS files to change the displayed content. 
       "label": "Front View",
       "description": "Optional text that appears on hover and in the modal."
     }
-    // Add as many image objects as you want! The gallery automatically adds a scrollbar.
+  ],
+  "hotspots": [
+    {
+      "slot": "hotspot-example",
+      "position": "0 0.5 0.5",
+      "normal": "0 0 1",
+      "label": "Interesting Feature",
+      "prompt": "Tell me about this specific feature...",
+      "orbit": "0deg 85deg 1.5m"
+    }
   ],
   "theme": {
     "colors": {
@@ -99,6 +115,17 @@ To teach the AI new facts or change its persona:
 
 *Note: Future optimizations may include advanced chunking and RAG (Retrieval-Augmented Generation) if the knowledge base outgrows the current system prompt injection approach.*
 
+### 🎯 Deep 3D & AI Integration
+The AI guide is deeply integrated with the 3D viewer:
+1. **Hotspot Triggers:** Clicking a golden hotspot on the 3D model automatically rotates the camera to that feature and asks the AI guide to explain it.
+2. **AI Camera Control:** The AI can actively take control of the 3D camera! If the AI wants to show you something, it emits a hidden `[LOOKAT: ...]` command in its response to dynamically spin the 3D model to the exact coordinate it is discussing.
+
+### 📍 Developer Mode: Hotspot Coordinate Picker
+To make adding new hotspots incredibly easy without guessing complex 3D coordinates:
+1. Ensure `const DEBUG_MODE = true;` is set in `js/script.js`.
+2. Open the page and hold the **`Alt`** key while clicking anywhere on the 3D model.
+3. An exact JSON snippet with the calculated 3D `position` and `normal` vectors will be generated and printed to your browser's Developer Console (F12), ready to be pasted directly into `data/config.json`!
+
 ## 🌐 Deployment (GitHub Pages)
 
 This project is deployed and hosted for free via **GitHub Pages**. 
@@ -107,6 +134,5 @@ The live site is automatically built and updated from the `main` branch: [https:
 
 ## 📝 Future Roadmap & Planned Features
 
-*   **Interactive Hotspots & Guides:** Add clickable annotation points directly on the 3D model that pop up specific anatomical or structure explanations.
-*   **AI LLM Integration:** Embed a chatbot sidebar powered by a Large Language Model to act as a virtual tour guide/specimen expert, allowing users to ask questions about the scanned item.
-*   **Dynamic Multi-Specimen Support:** Refactor the codebase to support multiple items using a central config routing system.
+*   **Dynamic Multi-Specimen Support:** Refactor the codebase to support multiple items using a central config routing system (e.g., via URL parameters).
+*   **Knowledge Base Expansion:** Implement advanced RAG (Retrieval-Augmented Generation) if the `knowledge.md` file grows too large for standard system prompts.

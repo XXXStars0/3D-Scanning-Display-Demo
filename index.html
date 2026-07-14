@@ -32,7 +32,6 @@
             <div class="panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--mc-border-dark); padding-bottom: 5px; margin-bottom: 10px;">
                     <h2 style="margin: 0; padding: 0; border: none;">Interactive 3D Model</h2>
-                    <button id="toggle-skybox-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Background</button>
                 </div>
                 <div class="model-container with-skybox" id="model-wrapper">
                     <model-viewer id="model-viewer" 
@@ -42,6 +41,11 @@
                                   shadow-intensity="1"
                                   ar>
                     </model-viewer>
+                </div>
+                <!-- 3D Viewer Controls -->
+                <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end;">
+                    <button id="toggle-anchors-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Hotspots</button>
+                    <button id="toggle-skybox-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Background</button>
                 </div>
             </div>
         </section>
