@@ -148,6 +148,24 @@ model-viewer {
     --poster-color: transparent;
 }
 
+/* Custom Model Loading Poster */
+.model-poster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(17, 17, 17, 0.85); /* Dark semi-transparent overlay */
+}
+
+.poster-text {
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    color: #55ff55; /* Minecraft Green */
+    text-shadow: 2px 2px 0 #000;
+}
+
 /* Gallery Grid */
 .gallery-grid {
     display: grid;

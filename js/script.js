@@ -37,6 +37,9 @@ async function initializeWebsite() {
             
             const tooltipGuide = document.querySelector('.ai-chat-btn .tooltip');
             if (tooltipGuide && uiText.chatTooltipGuide) tooltipGuide.textContent = uiText.chatTooltipGuide;
+
+            const posterText = document.getElementById('poster-text');
+            if (posterText && uiText.loadingModelText) posterText.textContent = uiText.loadingModelText;
         }
 
         // 1. Setup Page Title and Description

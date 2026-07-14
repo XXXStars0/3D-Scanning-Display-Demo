@@ -11,7 +11,8 @@
     "chatCleared": "Chat cleared! How can I help you?",
     "chatNoApiKey": "Please configure your API Key in the settings (gear icon) first.",
     "chatSettingsSaved": "Settings saved successfully! You can now chat.",
-    "chatConnectionFailed": "Connection failed:"
+    "chatConnectionFailed": "Connection failed:",
+    "loadingModelText": "Loading 3D Model..."
   },
   "modelUrl": "models/Happy_Ghast_optimized.glb",
   "bannerUrl": "img/1.21.6_ChaseTheSkies_Header.png",
