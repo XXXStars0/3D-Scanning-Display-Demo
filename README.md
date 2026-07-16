@@ -13,7 +13,7 @@ A lightweight, responsive frontend demo for presenting 3D-scanned specimens thro
 
 ## ✨ Highlights
 
-* **Interactive 3D Preview:** Google's `<model-viewer>` renders optimized `.glb` models with camera controls and clickable hotspots.
+* **Interactive 3D Preview:** Google's `<model-viewer>` renders optimized `.glb` models with camera controls, clickable hotspots, reset view, and optional auto-rotation.
 * **Local-First Hotspots:** A hotspot focuses the camera and opens a local explanation; visitors can optionally choose **Ask AI for more**.
 * **Structured Gallery:** Reference views and real-world plush photographs are grouped separately, with configured labels, modal image counts, and keyboard navigation.
 * **Context-Aware AI Guide:** Gallery and hotspot context persists for follow-up questions; text-only models use curated image descriptions rather than image input.

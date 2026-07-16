@@ -389,6 +389,10 @@ ${knowledgeBase}`;
                     }
 
                     if (targetOrbit) {
+                        // Restore the base orientation so configured hotspot views remain accurate.
+                        if (typeof window.prepareModelForFocusedView === 'function') {
+                            window.prepareModelForFocusedView();
+                        }
                         modelViewer.cameraOrbit = targetOrbit;
                         modelViewer.fieldOfView = 'auto';
                     }

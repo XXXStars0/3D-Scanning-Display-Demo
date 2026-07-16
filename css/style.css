@@ -714,6 +714,7 @@ a.link:hover {
 }
 
 .ai-chat-btn {
+    --ai-icon-half-width: 80px;
     position: relative;
     cursor: pointer;
     transition: transform 0.2s;
@@ -760,7 +761,9 @@ a.link:hover {
 
 .tooltip {
     visibility: hidden;
-    width: 170px;
+    width: 190px;
+    max-width: calc(100vw - 40px);
+    box-sizing: border-box;
     background-color: var(--mc-bg-color);
     color: var(--mc-text-dark);
     text-align: center;
@@ -769,11 +772,12 @@ a.link:hover {
     position: absolute;
     z-index: 1;
     bottom: 100%;
-    left: 50%;
-    margin-left: -85px;
+    right: 0;
+    left: auto;
     margin-bottom: 10px;
     font-family: var(--font-body);
     font-size: 0.8rem;
+    overflow-wrap: anywhere;
     box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
     opacity: 0;
     transition: opacity 0.3s;
@@ -799,8 +803,7 @@ a.link:hover {
     content: "";
     position: absolute;
     top: 100%;
-    left: 50%;
-    margin-left: -5px;
+    right: calc(var(--ai-icon-half-width) - 5px);
     border-width: 5px;
     border-style: solid;
     border-color: var(--mc-border-dark) transparent transparent transparent;
@@ -957,6 +960,63 @@ a.link:hover {
     display: none !important;
 }
 
+/* Compact model controls stay close to the viewer without increasing the page height too much. */
+.model-controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: center;
+    gap: 8px;
+    width: min(100%, 720px);
+    margin: 0 auto;
+    padding-top: 10px;
+    box-sizing: border-box;
+}
+
+.model-controls .mc-button {
+    width: 100%;
+    min-height: 40px;
+    padding: 7px 10px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.model-controls .mc-button:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+.model-guide {
+    margin: 8px auto 0;
+    padding: 0 10px;
+    color: var(--mc-text-dark);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    text-align: center;
+    opacity: 0.8;
+}
+
+/* The left viewer column is narrower before the main layout collapses at 900px. */
+@media (min-width: 901px) and (max-width: 1200px) {
+    .model-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .model-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 380px) {
+    .model-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* === Cornell / Modern Academic Theme Overrides === */
 body.theme-cornell {
     background: #f7f7f7;
@@ -993,6 +1053,15 @@ body.theme-cornell .panel-header h2 {
 body.theme-cornell .panel-content {
     padding: 15px 20px; /* Reliable content padding */
     box-sizing: border-box;
+}
+
+body.theme-cornell .model-controls {
+    padding: 10px 15px 0;
+}
+
+body.theme-cornell .model-guide {
+    margin-bottom: 10px;
+    color: #555555;
 }
 
 /* Let the 3D model container sit nicely without an extra padding wrapper */
@@ -1231,6 +1300,10 @@ body.theme-cornell .tooltip {
 
 body.theme-cornell .tooltip::after {
     border-color: #333 transparent transparent transparent;
+}
+
+body.theme-cornell .ai-chat-btn {
+    --ai-icon-half-width: 30px;
 }
 
 body.theme-cornell .active-context {

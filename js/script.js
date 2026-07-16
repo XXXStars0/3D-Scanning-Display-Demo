@@ -29,8 +29,8 @@ async function initializeWebsite() {
             const setById = (id, text) => { if(text && document.getElementById(id)) document.getElementById(id).textContent = text; };
             setById('settings-btn', uiText.btnAiSettings);
             setById('how-to-use-btn', uiText.btnHowToUse);
-            setById('toggle-anchors-btn', uiText.btnToggleHotspots);
-            setById('toggle-skybox-btn', uiText.btnToggleBackground);
+            setById('reset-model-btn', uiText.btnResetView);
+            setById('model-guide', uiText.modelGuide);
             setById('clear-chat', uiText.chatBtnClear);
             setById('send-btn', uiText.chatBtnSend);
             setById('test-connection-btn', uiText.btnTestConnection);
@@ -71,6 +71,7 @@ async function initializeWebsite() {
                 modelViewer.fieldOfView = 'auto';
             }
         }
+        updateModelControlButtons();
 
         // 2. Setup Header Banner Background
         if (data.bannerUrl) {
@@ -161,6 +162,9 @@ async function initializeWebsite() {
 
                 // Local feature details work independently of the optional AI guide.
                 btn.addEventListener('click', () => {
+                    // Restore the model orientation before applying the configured hotspot view.
+                    prepareModelForFocusedView();
+
                     // Orbit Camera and shift Target Focus
                     if (hotspotData.position) {
                         modelViewer.cameraTarget = hotspotData.position;
@@ -473,22 +477,105 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Skybox Toggle Logic
+// Model Viewer Controls
 const toggleSkyboxBtn = document.getElementById('toggle-skybox-btn');
 const toggleAnchorsBtn = document.getElementById('toggle-anchors-btn');
+const resetModelBtn = document.getElementById('reset-model-btn');
+const toggleAutoRotateBtn = document.getElementById('toggle-auto-rotate-btn');
 const modelWrapper = document.getElementById('model-wrapper');
+const controlledModelViewer = document.getElementById('model-viewer');
+
+function getModelControlText() {
+    const uiText = window.appConfig?.uiText || {};
+    return {
+        hideHotspots: uiText.btnHideHotspots || 'Hide Hotspots',
+        showHotspots: uiText.btnShowHotspots || 'Show Hotspots',
+        enableEnvironment: uiText.btnEnableEnvironment || 'Enable Environment',
+        disableEnvironment: uiText.btnDisableEnvironment || 'Disable Environment',
+        enableAutoRotate: uiText.btnEnableAutoRotate || 'Enable Auto Rotate',
+        disableAutoRotate: uiText.btnDisableAutoRotate || 'Disable Auto Rotate'
+    };
+}
+
+function updateModelControlButtons() {
+    const labels = getModelControlText();
+
+    if (toggleAnchorsBtn && modelWrapper) {
+        const hotspotsVisible = !modelWrapper.classList.contains('hide-anchors');
+        toggleAnchorsBtn.textContent = hotspotsVisible ? labels.hideHotspots : labels.showHotspots;
+        toggleAnchorsBtn.setAttribute('aria-pressed', String(hotspotsVisible));
+    }
+
+    if (toggleSkyboxBtn && modelWrapper) {
+        const environmentEnabled = modelWrapper.classList.contains('with-skybox');
+        toggleSkyboxBtn.textContent = environmentEnabled ? labels.disableEnvironment : labels.enableEnvironment;
+        toggleSkyboxBtn.setAttribute('aria-pressed', String(environmentEnabled));
+    }
+
+    if (toggleAutoRotateBtn && controlledModelViewer) {
+        const autoRotateEnabled = controlledModelViewer.hasAttribute('auto-rotate');
+        toggleAutoRotateBtn.textContent = autoRotateEnabled ? labels.disableAutoRotate : labels.enableAutoRotate;
+        toggleAutoRotateBtn.setAttribute('aria-pressed', String(autoRotateEnabled));
+    }
+}
+
+function pauseModelAutoRotate() {
+    if (!controlledModelViewer?.hasAttribute('auto-rotate')) return;
+
+    controlledModelViewer.removeAttribute('auto-rotate');
+    updateModelControlButtons();
+}
+
+function prepareModelForFocusedView() {
+    pauseModelAutoRotate();
+
+    // Auto-rotate uses a separate turntable angle that cameraOrbit does not reset.
+    if (typeof controlledModelViewer?.resetTurntableRotation === 'function') {
+        controlledModelViewer.resetTurntableRotation(0);
+    }
+}
+
+// Let AI camera actions follow the same behavior as local hotspot clicks.
+window.pauseModelAutoRotate = pauseModelAutoRotate;
+window.prepareModelForFocusedView = prepareModelForFocusedView;
 
 if (toggleSkyboxBtn && modelWrapper) {
     toggleSkyboxBtn.addEventListener('click', () => {
         modelWrapper.classList.toggle('with-skybox');
+        updateModelControlButtons();
     });
 }
 
 if (toggleAnchorsBtn && modelWrapper) {
     toggleAnchorsBtn.addEventListener('click', () => {
         modelWrapper.classList.toggle('hide-anchors');
+        updateModelControlButtons();
     });
 }
+
+if (toggleAutoRotateBtn && controlledModelViewer) {
+    toggleAutoRotateBtn.addEventListener('click', () => {
+        controlledModelViewer.toggleAttribute('auto-rotate');
+        updateModelControlButtons();
+    });
+}
+
+if (resetModelBtn && controlledModelViewer) {
+    resetModelBtn.addEventListener('click', () => {
+        // Reset both the camera and any turntable rotation created by auto-rotate.
+        prepareModelForFocusedView();
+
+        controlledModelViewer.cameraTarget = 'auto auto auto';
+        controlledModelViewer.cameraOrbit = window.appConfig?.aiConfig?.actions?.default_view || '0deg 80deg 1.4m';
+        controlledModelViewer.fieldOfView = 'auto';
+        if (typeof controlledModelViewer.jumpCameraToGoal === 'function') {
+            controlledModelViewer.jumpCameraToGoal();
+        }
+        updateModelControlButtons();
+    });
+}
+
+updateModelControlButtons();
 
 // === Hotspot Coordinate Picker (Developer Mode) ===
 // Set this to true to enable Alt+Click coordinate picking on the 3D model

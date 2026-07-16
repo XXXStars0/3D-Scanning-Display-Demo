@@ -50,6 +50,9 @@
                                   camera-controls 
                                   min-camera-orbit="auto auto 0m"
                                   shadow-intensity="1"
+                                  interaction-prompt="none"
+                                  auto-rotate-delay="0"
+                                  rotation-per-second="20deg"
                                   ar>
                         <!-- Loading Poster -->
                         <div slot="poster" id="model-poster" class="model-poster">
@@ -64,10 +67,13 @@
                     </aside>
                 </div>
                 <!-- 3D Viewer Controls -->
-                <div class="panel-content" style="display: flex; gap: 10px; padding-top: 10px; justify-content: flex-end;">
-                    <button id="toggle-anchors-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Hotspots</button>
-                    <button id="toggle-skybox-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Background</button>
+                <div class="panel-content model-controls">
+                    <button type="button" id="reset-model-btn" class="mc-button">Reset View</button>
+                    <button type="button" id="toggle-auto-rotate-btn" class="mc-button" aria-pressed="false">Enable Auto Rotate</button>
+                    <button type="button" id="toggle-anchors-btn" class="mc-button" aria-pressed="true">Hide Hotspots</button>
+                    <button type="button" id="toggle-skybox-btn" class="mc-button" aria-pressed="true">Disable Environment</button>
                 </div>
+                <p id="model-guide" class="model-guide" role="note">Drag to rotate · Scroll to zoom · Click markers to explore</p>
             </div>
         </section>
 

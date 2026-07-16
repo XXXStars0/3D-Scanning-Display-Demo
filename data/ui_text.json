@@ -24,5 +24,13 @@
   "aiStatusVerified": "AI connection verified",
   "aiStatusError": "AI connection failed",
   "loadingModelText": "Loading 3D Model...",
+  "btnHideHotspots": "Hide Hotspots",
+  "btnShowHotspots": "Show Hotspots",
+  "btnEnableEnvironment": "Enable Environment",
+  "btnDisableEnvironment": "Disable Environment",
+  "btnResetView": "Reset View",
+  "btnEnableAutoRotate": "Enable Auto Rotate",
+  "btnDisableAutoRotate": "Disable Auto Rotate",
+  "modelGuide": "Drag to rotate · Scroll to zoom · Click markers to explore",
   "byokStorageNote": "Provide your own API credentials to enable the AI Guide. They are stored only in this browser's LocalStorage."
 }
