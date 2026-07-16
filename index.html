@@ -47,14 +47,17 @@
                     class="model-container with-skybox"
                     id="model-wrapper"
                 >
-                    <model-viewer
-                        id="model-viewer"
-                        src=""
-                        camera-controls
-                        min-camera-orbit="auto auto 0m"
-                        shadow-intensity="1"
-                        ar
-                    >
+                <model-viewer
+                    id="model-viewer"
+                    src=""
+                    camera-controls
+                    min-camera-orbit="auto auto 0m"
+                    shadow-intensity="1"
+                    interaction-prompt="none"
+                    auto-rotate-delay="0"
+                    rotation-per-second="20deg"
+                    ar
+                >
                         <!-- Loading Poster -->
                         <div
                             slot="poster"
