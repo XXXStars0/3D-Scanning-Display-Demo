@@ -15,7 +15,9 @@ A lightweight, responsive frontend demo for presenting 3D-scanned specimens thro
 
 * **Interactive 3D Preview:** Google's `<model-viewer>` renders optimized `.glb` models with camera controls and clickable hotspots.
 * **Local-First Hotspots:** A hotspot focuses the camera and opens a local explanation; visitors can optionally choose **Ask AI for more**.
-* **Configurable Content:** Specimen content, interface text, and onboarding copy are separated into JSON files for easy updates and future localization.
+* **Structured Gallery:** Reference views and real-world plush photographs are grouped separately, with configured labels, modal image counts, and keyboard navigation.
+* **Context-Aware AI Guide:** Gallery and hotspot context persists for follow-up questions; text-only models use curated image descriptions rather than image input.
+* **Configurable Content:** Specimen content, gallery categories, interface text, AI behavior, and onboarding copy are separated into JSON files for easy updates and future localization.
 * **Switchable Themes:** Change the active setting in `data/theme.json` to switch between Minecraft and Cornell visual themes without editing CSS.
 * **BYOK AI Guide:** Visitors can provide their own OpenAI-compatible endpoint, key, and model for optional guided exploration.
 
@@ -37,10 +39,10 @@ python -m http.server
 
 Key configuration files:
 
-* `data/content.json` — specimen, model, gallery, and hotspots
+* `data/content.json` — specimen, model, hotspots, gallery images, and gallery categories
 * `data/ui_text.json` — interface text
 * `data/onboarding.json` — How to Use overlay text and steps
-* `data/ai_config.json` — AI guide behavior and camera actions
+* `data/ai_config.json` — AI guide behavior, generation settings, and camera actions
 * `data/theme.json` — active theme, colors, and fonts
 
 The AI guide uses BYOK. Values entered in **AI Settings** are stored only in that browser's `localStorage`. The browser does not read `.env`; it can remain an ignored local testing note, but must not be served or committed.

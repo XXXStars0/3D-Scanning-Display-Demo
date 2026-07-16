@@ -176,59 +176,14 @@ async function initializeWebsite() {
             });
         }
 
-        // 5. Generate Image Gallery (6+ faces of the item)
-        const galleryGrid = document.getElementById('gallery-grid');
-        
-        data.images.forEach(imgData => {
-            // Create container for gallery item
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
-            
-            // Create image element
-            const img = document.createElement('img');
-            img.src = imgData.src;
-            img.alt = imgData.label;
-            img.loading = "lazy";
-            
-            // Create label element
-            const label = document.createElement('div');
-            label.className = 'gallery-label';
-            label.textContent = imgData.label;
-
-            // Append elements
-            item.appendChild(img);
-            item.appendChild(label);
-            
-            // Setup global floating tooltip
-            if (imgData.description) {
-                const globalTooltip = document.getElementById('global-tooltip');
-                item.addEventListener('mouseenter', () => {
-                    globalTooltip.innerHTML = imgData.description;
-                    globalTooltip.classList.remove('hidden');
-                });
-                item.addEventListener('mousemove', (e) => {
-                    let x = e.clientX + 15;
-                    let y = e.clientY + 15;
-                    // Keep tooltip within viewport bounds
-                    if (x + globalTooltip.offsetWidth > window.innerWidth) {
-                        x = e.clientX - globalTooltip.offsetWidth - 10;
-                    }
-                    if (y + globalTooltip.offsetHeight > window.innerHeight) {
-                        y = e.clientY - globalTooltip.offsetHeight - 10;
-                    }
-                    globalTooltip.style.left = x + 'px';
-                    globalTooltip.style.top = y + 'px';
-                });
-                item.addEventListener('mouseleave', () => {
-                    globalTooltip.classList.add('hidden');
-                });
-            }
-            
-            // Add click listener to open the modal preview
-            item.addEventListener('click', () => openImageModal(imgData.src, imgData.label, imgData.description, imgData.prompt));
-
-            galleryGrid.appendChild(item);
-        });
+        // 5. Generate a grouped image gallery from the configured categories.
+        galleryImages = Array.isArray(data.images) ? data.images : [];
+        const galleryTotal = document.getElementById('gallery-total');
+        if (galleryTotal) {
+            const galleryCountFormat = uiText.galleryCountFormat || '{count} photos';
+            galleryTotal.textContent = galleryCountFormat.replace('{count}', galleryImages.length);
+        }
+        renderGallery(galleryImages, data.galleryCategories || {});
 
         // Reveal the body now that the theme is applied
         document.body.classList.add('theme-loaded');
@@ -242,6 +197,110 @@ async function initializeWebsite() {
         // Reveal the body even on error so the user can see the error message
         document.body.classList.add('theme-loaded');
     }
+}
+
+let galleryImages = [];
+
+// Group gallery items by category so reference views and real-world photos are distinct.
+function renderGallery(images, categories) {
+    const galleryGrid = document.getElementById('gallery-grid');
+    if (!galleryGrid) return;
+
+    const groupedImages = new Map();
+    images.forEach(image => {
+        const category = image.category || 'uncategorized';
+        if (!groupedImages.has(category)) groupedImages.set(category, []);
+        groupedImages.get(category).push(image);
+    });
+
+    const orderedCategories = [...groupedImages.keys()].sort((first, second) => {
+        const firstOrder = categories[first]?.order ?? Number.MAX_SAFE_INTEGER;
+        const secondOrder = categories[second]?.order ?? Number.MAX_SAFE_INTEGER;
+        return firstOrder - secondOrder;
+    });
+
+    galleryGrid.replaceChildren();
+    orderedCategories.forEach(categoryKey => {
+        const category = categories[categoryKey] || {};
+        const group = document.createElement('section');
+        group.className = `gallery-group gallery-group-${categoryKey}`;
+        const header = document.createElement('div');
+        header.className = 'gallery-group-header';
+        const title = document.createElement('h3');
+        title.textContent = `${category.title || categoryKey} · ${groupedImages.get(categoryKey).length}`;
+        const description = document.createElement('p');
+        description.textContent = category.description || '';
+        header.append(title, description);
+        group.appendChild(header);
+
+        groupedImages.get(categoryKey).forEach(image => group.appendChild(createGalleryItem(image)));
+        galleryGrid.appendChild(group);
+    });
+}
+
+// Create one keyboard-accessible thumbnail and its hover description.
+function createGalleryItem(imageData) {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'gallery-item';
+    const img = document.createElement('img');
+    img.src = imageData.src;
+    img.alt = imageData.label;
+    img.loading = 'lazy';
+    const label = document.createElement('div');
+    label.className = 'gallery-label';
+    label.textContent = imageData.label;
+    item.append(img, label);
+
+    if (imageData.description) {
+        const globalTooltip = document.getElementById('global-tooltip');
+        item.addEventListener('mouseenter', () => {
+            globalTooltip.textContent = imageData.description;
+            globalTooltip.classList.remove('hidden');
+        });
+        item.addEventListener('mousemove', event => positionTooltip(globalTooltip, event));
+        item.addEventListener('mouseleave', () => globalTooltip.classList.add('hidden'));
+    }
+
+    item.addEventListener('click', () => openImageModal(imageData));
+    return item;
+}
+
+function positionTooltip(tooltip, event) {
+    let x = event.clientX + 15;
+    let y = event.clientY + 15;
+    if (x + tooltip.offsetWidth > window.innerWidth) x = event.clientX - tooltip.offsetWidth - 10;
+    if (y + tooltip.offsetHeight > window.innerHeight) y = event.clientY - tooltip.offsetHeight - 10;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+// Build extra text context for models that cannot directly inspect images.
+function buildGalleryAiContext(imageData) {
+    const visualFacts = Array.isArray(imageData.visualFacts) && imageData.visualFacts.length > 0
+        ? imageData.visualFacts.map(fact => `- ${fact}`).join('\n')
+        : '- No additional visual facts were configured.';
+
+    return `The visitor is viewing a gallery image.
+
+Image title: ${imageData.label}
+Image category: ${imageData.category || 'uncategorized'}
+Curated image description: ${imageData.description || 'No description provided.'}
+
+Curated visible details:
+${visualFacts}
+
+Use the curated image context above together with the specimen Knowledge Base. Do not claim that you directly viewed the image. Clearly identify any inference and do not invent visual details.`;
+}
+
+// Build local feature context before asking the optional AI guide.
+function buildHotspotAiContext(hotspotData) {
+    return `The visitor selected a hotspot on the 3D specimen.
+
+Feature: ${hotspotData.label}
+Curated feature description: ${hotspotData.description || 'No description provided.'}
+
+Use this hotspot context together with the specimen Knowledge Base. Do not invent details that are not documented.`;
 }
 
 // === Local Hotspot Details ===
@@ -268,7 +327,10 @@ if (closeHotspotInfoBtn) {
 if (askHotspotAiBtn) {
     askHotspotAiBtn.addEventListener('click', () => {
         if (activeHotspot?.prompt && window.triggerHotspotAI) {
-            window.triggerHotspotAI(activeHotspot.prompt);
+            window.triggerHotspotAI(activeHotspot.prompt, buildHotspotAiContext(activeHotspot), {
+                type: 'hotspot',
+                title: activeHotspot.label
+            });
         }
     });
 }
@@ -334,29 +396,66 @@ const modal = document.getElementById("image-modal");
 const modalImg = document.getElementById("modal-img");
 const captionText = document.getElementById("modal-caption");
 const closeBtn = document.getElementById("close-modal");
+const modalMeta = document.getElementById('modal-meta');
+const previousImageBtn = document.getElementById('prev-image-btn');
+const nextImageBtn = document.getElementById('next-image-btn');
+let activeGalleryIndex = -1;
 
-// Opens the modal with the specified image source, caption, and description
-function openImageModal(src, caption, description, prompt) {
+// Opens the modal and prepares a text-only AI context for this image.
+function openImageModal(imageData) {
+    const imageIndex = galleryImages.indexOf(imageData);
+    showGalleryImage(imageIndex >= 0 ? imageIndex : 0);
+}
+
+// Render the selected image, type label, count, and navigation state.
+function showGalleryImage(index) {
+    if (index < 0 || index >= galleryImages.length) return;
+    activeGalleryIndex = index;
+    const imageData = galleryImages[activeGalleryIndex];
     modal.style.display = "block";
-    modalImg.src = src;
-    
-    let html = `<strong>${caption}</strong><br><span class="modal-desc">${description || ''}</span>`;
-    
+    modalImg.src = imageData.src;
+
+    const category = window.appConfig?.galleryCategories?.[imageData.category] || {};
+    const imageType = category.shortLabel || imageData.category || 'Gallery Image';
+    modalMeta.textContent = `${imageType} · ${activeGalleryIndex + 1} / ${galleryImages.length}`;
+    previousImageBtn.disabled = activeGalleryIndex === 0;
+    nextImageBtn.disabled = activeGalleryIndex === galleryImages.length - 1;
+
     const uiText = window.appConfig?.uiText || {};
     const askPrefix = uiText.modalAskAIPrefix || "Can you tell me more about the photo: ";
     const btnAskAI = uiText.modalBtnAskAI || "Ask AI About This";
+    const question = imageData.aiPrompt || imageData.prompt || `${askPrefix}${imageData.label}?`;
+    const aiContext = buildGalleryAiContext(imageData);
 
-    const askPrompt = prompt ? prompt : `${askPrefix}${caption}?`;
+    // Create caption content without inserting configuration text as HTML.
+    const title = document.createElement('strong');
+    title.textContent = imageData.label;
+    const description = document.createElement('span');
+    description.className = 'modal-desc';
+    description.textContent = imageData.description || '';
+    const askButton = document.createElement('button');
+    askButton.className = 'mc-button';
+    askButton.style.marginTop = '15px';
+    askButton.style.fontSize = '0.85rem';
+    askButton.textContent = btnAskAI;
+    askButton.addEventListener('click', () => {
+        if (window.triggerHotspotAI) window.triggerHotspotAI(question, aiContext, {
+            type: 'gallery',
+            title: imageData.label
+        });
+    });
+
     // We leave the modal open so the user can look at the photo while the AI answers
-    html += `<br><button class="mc-button" onclick="window.triggerHotspotAI('${askPrompt.replace(/'/g, "\\'")}')" style="margin-top: 15px; font-size: 0.85rem;">${btnAskAI}</button>`;
-    
-    captionText.innerHTML = html;
+    captionText.replaceChildren(title, document.createElement('br'), description, document.createElement('br'), askButton);
 }
 
 // Close the modal when the 'X' button is clicked
 closeBtn.onclick = function() {
     modal.style.display = "none";
 }
+
+previousImageBtn.addEventListener('click', () => showGalleryImage(activeGalleryIndex - 1));
+nextImageBtn.addEventListener('click', () => showGalleryImage(activeGalleryIndex + 1));
 
 // Close modal with Escape key
 document.addEventListener('keydown', function(event) {
@@ -365,6 +464,12 @@ document.addEventListener('keydown', function(event) {
     }
     if (event.key === "Escape" && modal.style.display === "block") {
         modal.style.display = "none";
+    }
+    if (modal.style.display === "block" && event.key === "ArrowLeft") {
+        showGalleryImage(activeGalleryIndex - 1);
+    }
+    if (modal.style.display === "block" && event.key === "ArrowRight") {
+        showGalleryImage(activeGalleryIndex + 1);
     }
 });
 

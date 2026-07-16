@@ -24,6 +24,9 @@ const floatingChatPanel = document.getElementById('floating-chat-panel');
 const aiChatBtn = document.getElementById('ai-chat-btn');
 const closeChatBtn = document.getElementById('close-chat');
 const clearChatBtn = document.getElementById('clear-chat');
+const activeContextElement = document.getElementById('active-context');
+const activeContextLabel = document.getElementById('active-context-label');
+const clearContextBtn = document.getElementById('clear-context-btn');
 
 let knowledgeBase = ""; // Will store our knowledge text
 
@@ -33,6 +36,7 @@ let activeApiKey = '';
 let activeApiModel = 'deepseek-v4-flash';
 let lastVerifiedSignature = '';
 let currentAiStatus = 'unconfigured';
+let activeContext = null;
 
 function getConfigSignature(url = activeApiUrl, key = activeApiKey, model = activeApiModel) {
     return `${url}\u0000${key}\u0000${model}`;
@@ -68,6 +72,29 @@ function setConnectionFeedback(state = '', message = '') {
     connectionStatus.textContent = message;
 }
 
+// Keep one selected exhibit context available for concise follow-up questions.
+function setActiveContext(context) {
+    if (!context?.content || !activeContextElement || !activeContextLabel) return;
+
+    activeContext = context;
+    const uiText = window.appConfig?.uiText || {};
+    const typeLabel = context.type === 'gallery'
+        ? (uiText.contextGalleryPrefix || 'Gallery')
+        : (uiText.contextHotspotPrefix || 'Feature');
+    activeContextLabel.textContent = `${typeLabel}: ${context.title || 'Selected item'}`;
+    activeContextElement.classList.remove('hidden');
+}
+
+function clearActiveContext() {
+    activeContext = null;
+    activeContextElement?.classList.add('hidden');
+}
+
+function buildApiText(question) {
+    if (!activeContext?.content) return question;
+    return `${activeContext.content}\n\nVisitor follow-up question: ${question}`;
+}
+
 function getApiErrorMessage(status) {
     const messages = {
         400: 'The request was invalid. Check the Base URL and model name.',
@@ -78,6 +105,78 @@ function getApiErrorMessage(status) {
         429: 'The AI service rate limit has been reached. Try again shortly.'
     };
     return messages[status] || `The AI service returned an unexpected error (${status}).`;
+}
+
+// Read generation settings from ai_config.json and apply safe defaults.
+function getGenerationConfig() {
+    const config = window.appConfig?.aiConfig?.generation || {};
+    const configuredMaxTokens = Number(config.maxTokens);
+    return {
+        maxTokens: Number.isFinite(configuredMaxTokens) && configuredMaxTokens > 0
+            ? Math.floor(configuredMaxTokens)
+            : 800,
+        temperature: typeof config.temperature === 'number' ? config.temperature : 0.7,
+        tokenParameter: ['auto', 'max_tokens', 'max_completion_tokens'].includes(config.tokenParameter)
+            ? config.tokenParameter
+            : 'auto',
+        responseInstructions: config.responseInstructions || 'Answer in 2 to 4 concise sentences and complete the final sentence before stopping.'
+    };
+}
+
+// Build a request body that works with most OpenAI-compatible APIs.
+function buildRequestBody(model, messages, stream, options = {}) {
+    const generation = getGenerationConfig();
+    const maxTokens = options.maxTokens || generation.maxTokens;
+    const tokenParameter = generation.tokenParameter === 'max_completion_tokens'
+        ? 'max_completion_tokens'
+        : 'max_tokens';
+    const body = { model, messages, stream };
+    body[tokenParameter] = maxTokens;
+
+    if (options.includeTemperature !== false) {
+        body.temperature = generation.temperature;
+    }
+
+    return { body, tokenMode: generation.tokenParameter };
+}
+
+// Retry only when a provider reports a known parameter compatibility issue.
+async function requestAi(apiUrl, apiKey, requestBody, tokenMode = 'auto') {
+    const body = { ...requestBody };
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (response.status !== 400) return response;
+
+        const errorText = await response.clone().text();
+        const tokenParameterError = /max_tokens|max_completion_tokens/i.test(errorText)
+            && /unsupported|not supported|unknown|use max_completion_tokens/i.test(errorText);
+        const temperatureError = /temperature/i.test(errorText)
+            && /unsupported|not supported|only.*default/i.test(errorText);
+
+        if (tokenMode === 'auto' && body.max_tokens !== undefined && tokenParameterError) {
+            body.max_completion_tokens = body.max_tokens;
+            delete body.max_tokens;
+            continue;
+        }
+
+        if (body.temperature !== undefined && temperatureError) {
+            delete body.temperature;
+            continue;
+        }
+
+        return response;
+    }
+
+    throw new Error('The selected model rejected the available generation parameters.');
 }
 
 // The themed icon is recreated by script.js, so apply the latest status again.
@@ -129,20 +228,13 @@ async function testConnection() {
     testConnectionBtn.disabled = true;
     setConnectionFeedback('testing', window.appConfig?.uiText?.aiTestingConnection || 'Testing connection…');
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: apiModel,
-                messages: [{ role: 'user', content: 'Reply with OK.' }],
-                max_tokens: 1,
-                temperature: 0,
-                stream: false
-            })
+        const request = buildRequestBody(apiModel, [
+            { role: 'user', content: 'Reply with OK.' }
+        ], false, {
+            maxTokens: 16,
+            includeTemperature: false
         });
+        const response = await requestAi(apiUrl, apiKey, request.body, request.tokenMode);
         if (!response.ok) throw new Error(getApiErrorMessage(response.status));
 
         lastVerifiedSignature = getConfigSignature(apiUrl, apiKey, apiModel);
@@ -208,6 +300,9 @@ async function sendMessage() {
         return;
     }
 
+    // Keep the chat message concise while sending the selected exhibit context to the model.
+    const apiText = buildApiText(text);
+
     // Display user's message
     addMessage('User', text);
     chatInput.value = ''; // Clear input field
@@ -223,35 +318,26 @@ async function sendMessage() {
     try {
         // Construct the System Prompt with the injected Knowledge Base
         const aiPromptAdds = window.appConfig?.aiConfig?.systemPromptAdditions || '';
+        const responseInstructions = getGenerationConfig().responseInstructions;
         const systemPrompt = `You are an expert museum guide for this 3D specimen display. 
 You are enthusiastic, slightly humorous, and speak in a Minecraft-inspired tone.
-Answer the user's questions about the specimen based strictly on the following Knowledge Base. 
-Do not make up facts outside the knowledge base. Keep your answers concise and engaging.
+Answer using the specimen Knowledge Base and any curated hotspot or gallery context supplied with the current question.
+Curated gallery context is text prepared by the exhibit author; do not claim that you directly viewed an image.
+If a detail is unavailable, discuss relevant documented facts without inventing visual details. Keep your answers concise and engaging.
+${responseInstructions}
 ${aiPromptAdds}
 
 --- KNOWLEDGE BASE ---
 ${knowledgeBase}`;
 
         // Prepare the API request
-        const requestBody = {
-            model: apiModel,
-            messages: [
+        const request = buildRequestBody(apiModel, [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: text }
-            ],
-            max_tokens: 300,
-            temperature: 0.7,
-            stream: true // Enable streaming for typewriter effect
-        };
+                { role: 'user', content: apiText }
+            ], true);
 
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}` // Bearer token auth
-            },
-            body: JSON.stringify(requestBody)
-        });
+        // Enable streaming for the typewriter effect.
+        const response = await requestAi(apiUrl, apiKey, request.body, request.tokenMode);
 
         // Remove typing indicator
         if (chatHistory.contains(typingMsg)) chatHistory.removeChild(typingMsg);
@@ -404,12 +490,15 @@ closeChatBtn.addEventListener('click', () => {
 
 clearChatBtn.addEventListener('click', () => {
     chatHistory.innerHTML = '';
+    clearActiveContext();
     const msg = window.appConfig?.uiText?.chatCleared || 'Chat cleared! How can I help you?';
     addMessage('AI', msg);
 });
 
+clearContextBtn.addEventListener('click', clearActiveContext);
+
 // Global function to allow script.js to trigger the AI via Hotspots
-window.triggerHotspotAI = function(promptText) {
+window.triggerHotspotAI = function(promptText, contextualPrompt = '', contextInfo = {}) {
     // Open chat panel if closed
     if (floatingChatPanel.classList.contains('hidden')) {
         floatingChatPanel.classList.remove('hidden');
@@ -417,6 +506,13 @@ window.triggerHotspotAI = function(promptText) {
     
     // Set input and send
     chatInput.value = promptText;
+    if (contextualPrompt) {
+        setActiveContext({
+            type: contextInfo.type || 'hotspot',
+            title: contextInfo.title || 'Selected item',
+            content: contextualPrompt
+        });
+    }
     sendMessage();
 };
 

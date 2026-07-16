@@ -35,16 +35,110 @@
       "orbit": "0deg 45deg 0.8m"
     }
   ],
+  "galleryCategories": {
+    "reference": {
+      "title": "Reference Views",
+      "shortLabel": "Reference View",
+      "description": "Orthographic views derived from the scanned specimen.",
+      "order": 1
+    },
+    "creative": {
+      "title": "Creative Context",
+      "shortLabel": "Real-world Photo",
+      "description": "Staged real-world photographs of the Happy Ghast plush.",
+      "order": 2
+    }
+  },
   "images": [
-    { "id": "front", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Front.png", "label": "Front View", "description": "The front orthographic view of the 3D specimen." },
-    { "id": "back", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Back.png", "label": "Back View", "description": "The back orthographic view showing the rear details." },
-    { "id": "left", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Left.png", "label": "Left View", "description": "Left-side profile of the Kleenex box." },
-    { "id": "right", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Right.png", "label": "Right View", "description": "Right-side profile of the Kleenex box." },
-    { "id": "top", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Top.png", "label": "Top View", "description": "A top-down look at the harnessed ghast." },
-    { "id": "bottom", "src": "img/Happy Ghast in a Box_9746/HappyGhast_Bottom.png", "label": "Bottom View", "description": "The bottom surface of the box." },
-    { "id": "grad", "src": "img/Happy_Ghast_Graduate.JPG", "label": "Graduation", "description": "A proud Happy Ghast posing with a graduation cap." },
-    { "id": "etch", "src": "img/Happy_Ghast_With_Etch_A_Sketch.jpeg", "label": "Etch A Sketch", "description": "Happy Ghast creating art on an Etch A Sketch." },
-    { "id": "museum", "src": "img/Happy_Ghast_in_museum.jpeg", "label": "Museum Exhibit", "description": "Happy ghast is watching an aquarium." },
-    { "id": "flower", "src": "img/Happy_Ghast_with_dandelion_flower.jpeg", "label": "Dandelion Flower", "description": "Enjoying a fresh dandelion flower in the wild." }
+    {
+      "id": "front",
+      "src": "img/Happy Ghast in a Box_9746/HappyGhast_Front.png",
+      "label": "Front View",
+      "category": "reference",
+      "description": "The front orthographic view of the 3D specimen.",
+      "visualFacts": ["The smiling face is visible from the front.", "The plush sits above the front panel of the tissue box."],
+      "aiPrompt": "Explain the specimen's front-facing features and what makes the Happy Ghast look friendly."
+    },
+    {
+      "id": "back",
+      "src": "img/Happy Ghast in a Box_9746/HappyGhast_Back.png",
+      "label": "Back View",
+      "category": "reference",
+      "description": "The back orthographic view showing the rear details.",
+      "visualFacts": ["This is the rear orthographic view of the scanned composition.", "It documents the back surfaces of the plush and tissue box."],
+      "aiPrompt": "Explain why the rear view is useful when examining this 3D scan."
+    },
+    {
+      "id": "left",
+      "src": "img/Happy Ghast in a Box_9746/HappyGhast_Left.png",
+      "label": "Left View",
+      "category": "reference",
+      "description": "Left-side profile of the Happy Ghast and tissue box.",
+      "visualFacts": ["This is the left orthographic profile.", "The side view shows the vertical relationship between the plush and its tissue-box pedestal."],
+      "aiPrompt": "Explain the left-side profile and the relationship between the plush and tissue box."
+    },
+    {
+      "id": "right",
+      "src": "img/Happy Ghast in a Box_9746/HappyGhast_Right.png",
+      "label": "Right View",
+      "category": "reference",
+      "description": "Right-side profile of the Happy Ghast and tissue box.",
+      "visualFacts": ["This is the right orthographic profile.", "The image documents the side silhouette of the complete scanned composition."],
+      "aiPrompt": "Explain what the right-side view reveals about the specimen's form and arrangement."
+    },
+    {
+      "id": "top",
+      "src": "img/Happy Ghast in a Box_9746/HappyGhast_Top.png",
+      "label": "Top View",
+      "category": "reference",
+      "description": "A top-down look at the harnessed Happy Ghast.",
+      "visualFacts": ["The view looks down onto the specimen.", "The blue harness is positioned on top of the Happy Ghast."],
+      "aiPrompt": "Explain the top view and the role of the blue harness."
+    },
+    {
+      "id": "bottom",
+      "src": "img/Happy Ghast in a Box_9746/HappyGhast_Bottom.png",
+      "label": "Bottom View",
+      "category": "reference",
+      "description": "The bottom surface of the tissue-box pedestal.",
+      "visualFacts": ["This view documents the underside of the scanned composition.", "The tissue box forms the base of the specimen."],
+      "aiPrompt": "Explain what the bottom view contributes to a complete 3D reference set."
+    },
+    {
+      "id": "grad",
+      "src": "img/Happy_Ghast_Graduate.JPG",
+      "label": "Graduation",
+      "category": "creative",
+      "description": "A real-world photo of the Happy Ghast plush posing with a graduation cap.",
+      "visualFacts": ["This is a real-world scene photograph of the Happy Ghast plush.", "The plush is presented with a graduation cap.", "It is not an orthographic scan reference image."],
+      "aiPrompt": "Describe how this real-world graduation scene presents the Happy Ghast plush, using only the curated photo notes and specimen knowledge."
+    },
+    {
+      "id": "etch",
+      "src": "img/Happy_Ghast_With_Etch_A_Sketch.jpeg",
+      "label": "Etch A Sketch",
+      "category": "creative",
+      "description": "A real-world photo of the Happy Ghast plush with an Etch A Sketch.",
+      "visualFacts": ["This is a real-world scene photograph of the Happy Ghast plush.", "The scene pairs the plush with an Etch A Sketch.", "It is not part of the orthographic scan reference set."],
+      "aiPrompt": "Explain the playful real-world scene between the Happy Ghast plush and the Etch A Sketch, without treating it as a 3D scan view."
+    },
+    {
+      "id": "museum",
+      "src": "img/Happy_Ghast_in_museum.jpeg",
+      "label": "Museum Exhibit",
+      "category": "creative",
+      "description": "A real-world photo of the Happy Ghast plush near an aquarium in a museum setting.",
+      "visualFacts": ["This is a real-world scene photograph of the Happy Ghast plush.", "The plush appears near an aquarium in a museum setting.", "It is not a scan reference view."],
+      "aiPrompt": "Describe how this real-world museum scene reframes the Happy Ghast plush as a visitor or exhibit character, using only the supplied photo context."
+    },
+    {
+      "id": "flower",
+      "src": "img/Happy_Ghast_with_dandelion_flower.jpeg",
+      "label": "Dandelion Flower",
+      "category": "creative",
+      "description": "A real-world outdoor photo of the Happy Ghast plush with a dandelion flower.",
+      "visualFacts": ["This is a real-world outdoor photograph of the Happy Ghast plush.", "The scene pairs the plush with a dandelion flower.", "It is not an orthographic scan view."],
+      "aiPrompt": "Describe how this real-world outdoor photo uses the flower and setting to reinforce the friendly Happy Ghast plush theme."
+    }
   ]
 }

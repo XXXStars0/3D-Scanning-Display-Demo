@@ -249,13 +249,45 @@ model-viewer {
 
 /* Gallery Grid */
 .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns for compactness */
-    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     max-height: 420px; /* Restrict height to compress layout */
     overflow-y: auto;
     padding-right: 10px; /* Space for scrollbar */
-    align-content: start;
+}
+
+.gallery-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.gallery-total {
+    padding: 3px 7px;
+    border: 2px solid var(--mc-border-dark);
+    color: var(--mc-text-dark);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.gallery-group-header {
+    grid-column: 1 / -1;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--mc-border-dark);
+}
+
+.gallery-group-header h3 {
+    margin: 0;
+    color: var(--mc-text-dark);
+    font-family: var(--font-title);
+    font-size: 1rem;
+}
+
+.gallery-group-header p {
+    margin: 4px 0 0;
+    color: var(--mc-text-dark);
+    font-size: 0.75rem;
 }
 
 /* Custom Minecraft Scrollbar */
@@ -291,6 +323,8 @@ model-viewer {
     align-items: center;
     justify-content: center;
     position: relative;
+    font-family: var(--font-body);
+    text-align: inherit;
 }
 
 .gallery-item:hover {
@@ -335,14 +369,26 @@ model-viewer {
     background-color: rgba(0,0,0,0.85); 
 }
 
+.modal-image-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    max-width: calc(100% - 120px);
+    margin: 5vh auto 0;
+}
+
 .modal-content {
     margin: auto;
     display: block;
-    max-width: 90%;
+    max-width: 100%;
     max-height: 60vh;
-    margin-top: 5vh;
     image-rendering: pixelated; /* Crisp pixel scaling */
     border: 4px solid var(--mc-bg-color);
+}
+
+.modal-image-stage .modal-content {
+    margin: 0;
 }
 
 #modal-caption {
@@ -365,6 +411,51 @@ model-viewer {
     display: inline-block;
     margin-top: 10px;
     text-shadow: 1px 1px 0 #000;
+}
+
+.modal-meta {
+    margin: 10px auto 0;
+    width: 80%;
+    text-align: center;
+    color: #dddddd;
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+}
+
+.modal-nav-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 1001;
+    min-width: 42px;
+    padding: 8px 10px;
+    font-size: 1.5rem;
+    transform: translateY(-50%);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.modal-nav-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.modal-nav-btn:not(:disabled):hover {
+    transform: translateY(-50%) scale(1.08);
+}
+
+.modal-prev { right: calc(100% + 12px); }
+.modal-next { left: calc(100% + 12px); }
+
+@media (max-width: 600px) {
+    .modal-image-stage {
+        max-width: calc(100% - 32px);
+    }
+
+    .modal-nav-btn {
+        background-color: rgba(70, 70, 70, 0.92);
+    }
+
+    .modal-prev { left: 8px; right: auto; }
+    .modal-next { right: 8px; left: auto; }
 }
 
 /* Hotspot details sit over the viewer, preserving the page's one-screen layout. */
@@ -451,6 +542,8 @@ model-viewer {
     cursor: pointer;
     font-family: var(--font-title);
     transition: color 0.2s;
+    border: 0;
+    background: transparent;
 }
 
 .close-btn:hover,
@@ -800,6 +893,38 @@ a.link:hover {
     gap: 10px;
 }
 
+/* Shows the single gallery or hotspot context used for follow-up questions. */
+.active-context {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 15px 10px;
+    padding: 6px 8px;
+    background-color: #333333;
+    border: 2px solid var(--mc-border-dark);
+    color: #ffffff;
+    font-size: 0.8rem;
+}
+
+.active-context.hidden {
+    display: none;
+}
+
+.active-context-clear {
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.active-context-clear:hover,
+.active-context-clear:focus {
+    color: #ff5555;
+}
+
 /* --- Hotspot Styles --- */
 .hotspot-btn {
     display: block;
@@ -954,6 +1079,38 @@ body.theme-cornell .gallery-label {
     font-weight: 500;
 }
 
+body.theme-cornell .gallery-group-header {
+    border-bottom-color: #b31b1b;
+}
+
+body.theme-cornell .gallery-total {
+    border: 1px solid #ffffff;
+    border-radius: 12px;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+body.theme-cornell .gallery-group-header h3,
+body.theme-cornell .gallery-group-header p {
+    color: #333333;
+}
+
+body.theme-cornell .modal-nav-btn {
+    border: none;
+    border-radius: 4px;
+    background-color: #b31b1b;
+    color: #ffffff;
+}
+
+body.theme-cornell .modal-nav-btn:not(:disabled):hover {
+    background-color: #901515;
+    transform: translateY(-50%) scale(1.08);
+}
+
+body.theme-cornell .modal-meta {
+    color: #eeeeee;
+}
+
 body.theme-cornell .model-container {
     border: 1px solid #eee;
     border-radius: 8px;
@@ -1074,6 +1231,17 @@ body.theme-cornell .tooltip {
 
 body.theme-cornell .tooltip::after {
     border-color: #333 transparent transparent transparent;
+}
+
+body.theme-cornell .active-context {
+    background-color: #f7f7f7;
+    border: 1px solid #dddddd;
+    border-radius: 6px;
+    color: #333333;
+}
+
+body.theme-cornell .active-context-clear {
+    color: #b31b1b;
 }
 
 body.theme-cornell .ai-status-indicator {

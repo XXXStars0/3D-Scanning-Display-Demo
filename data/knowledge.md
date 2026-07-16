@@ -21,3 +21,8 @@ This specimen is a unique combination of two items: a Happy Ghast plush toy from
 ## 3D Scan Properties
 - **Scanning Method**: The entire composition was 3D scanned using the Apple Reality Composer application.
 - **Characteristics**: The scan captures the distinct textures of both objects—the soft, slightly uneven fabric of the plush toy and the rigid, printed cardboard of the tissue box. 
+
+## Gallery Context
+- **Reference Views**: Front, back, left, right, top, and bottom images are orthographic reference views derived from the scanned composition. They document its form from multiple directions.
+- **Creative Images**: Graduation, Etch A Sketch, Museum Exhibit, and Dandelion Flower are supplemental real-world photographs of the Happy Ghast plush in staged scenes. They are not orthographic views or evidence of the original scanning setup.
+- **Interpretation Rule**: Use the curated description and visible facts supplied with the selected gallery image. Do not imply that a text-only model directly inspected the image.
