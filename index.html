@@ -18,8 +18,10 @@
     <header id="header">
         <div class="banner">
             <h1 id="page-title">Loading...</h1>
-            <!-- Settings button for AI config -->
-            <button id="settings-btn" class="mc-button" style="position: absolute; top: 20px; right: 30px;">⚙ AI Settings</button>
+            <div class="header-actions">
+                <button id="how-to-use-btn" class="mc-button header-action">How to Use</button>
+                <button id="settings-btn" class="mc-button header-action">⚙ AI Settings</button>
+            </div>
         </div>
     </header>
 
@@ -54,6 +56,12 @@
                             <div id="poster-text" class="poster-text">Loading Model...</div>
                         </div>
                     </model-viewer>
+                    <aside id="hotspot-info-card" class="hotspot-info-card hidden" aria-live="polite">
+                        <button type="button" id="close-hotspot-info" class="hotspot-card-close" aria-label="Close feature details">&times;</button>
+                        <h3 id="hotspot-info-title"></h3>
+                        <p id="hotspot-info-description"></p>
+                        <button type="button" id="ask-hotspot-ai" class="mc-button">Ask AI for more</button>
+                    </aside>
                 </div>
                 <!-- 3D Viewer Controls -->
                 <div class="panel-content" style="display: flex; gap: 10px; padding-top: 10px; justify-content: flex-end;">
@@ -93,7 +101,7 @@
                 <button type="button" id="close-settings" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">X</button>
             </div>
             <div class="panel-content">
-                <p style="font-size: 0.9rem; color: #aaa; margin-top: 0;">Provide your API credentials to enable the AI Guide. Your key is stored securely in your browser's LocalStorage.</p>
+                <p id="byok-storage-note" style="font-size: 0.9rem; color: #aaa; margin-top: 0;">Provide your own API credentials to enable the AI Guide. They are stored only in this browser's LocalStorage.</p>
             
             <form class="settings-form" id="settings-form">
                 <label for="api-url" style="margin-top: 10px; display: block;">API Base URL:</label>
@@ -107,9 +115,28 @@
                 
                 <div style="display: flex; gap: 10px; margin-top: 25px;">
                     <button type="button" id="reset-settings-btn" class="mc-button danger-btn" style="flex: 1;">Reset</button>
+                    <button type="button" id="test-connection-btn" class="mc-button" style="flex: 1;">Test Connection</button>
                     <button type="submit" id="save-settings-btn" class="mc-button" style="flex: 2;">Save Config</button>
                 </div>
+                <p id="connection-status" class="connection-status" role="status" aria-live="polite"></p>
             </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- First-visit guide: an overlay so it never changes the model layout -->
+    <div id="onboarding-modal" class="modal onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" aria-hidden="true">
+        <div class="modal-content panel onboarding-panel">
+            <div class="panel-header">
+                <h2 id="onboarding-title">How to Use This Demo</h2>
+                <button type="button" id="close-onboarding" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">X</button>
+            </div>
+            <div class="panel-content">
+                <p id="onboarding-intro"></p>
+                <ol id="onboarding-steps" class="onboarding-steps"></ol>
+                <div class="onboarding-actions">
+                    <button type="button" id="dismiss-onboarding" class="mc-button">Got it</button>
+                </div>
             </div>
         </div>
     </div>
@@ -125,7 +152,10 @@
         <!-- Floating Chat Panel -->
         <div id="floating-chat-panel" class="panel chat-panel hidden">
             <div class="panel-header chat-header">
-                <h2>AI Guide</h2>
+                <div class="chat-title-with-status">
+                    <h2>AI Guide</h2>
+                    <span id="ai-status-indicator" class="ai-status-indicator is-unconfigured" role="status" aria-label="AI not configured" title="AI not configured"></span>
+                </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <button id="clear-chat" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">Clear</button>
                     <button id="close-chat" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">X</button>
@@ -142,7 +172,10 @@
         
         <!-- Floating Chat Button -->
         <div id="ai-chat-btn" class="ai-chat-btn">
-            <span class="tooltip">Need a Guide?</span>
+            <span class="tooltip">
+                <span id="ai-chat-tooltip-label" class="ai-chat-tooltip-label">Need a Guide?</span>
+                <span id="ai-tooltip-status" class="ai-tooltip-status is-unconfigured">● AI not configured</span>
+            </span>
             <img src="img/Happy_ghast_idle_animation_(pixel_art).gif" alt="AI Guide" class="flipped-ghast">
         </div>
     </div>
@@ -159,4 +192,3 @@
     </footer>
 </body>
 </html>
-

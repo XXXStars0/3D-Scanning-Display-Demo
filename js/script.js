@@ -2,34 +2,40 @@
 async function initializeWebsite() {
     try {
         // Fetch the configuration JSON files
-        const [contentRes, uiRes, aiRes, themeRes] = await Promise.all([
+        const [contentRes, uiRes, aiRes, themeRes, onboardingRes] = await Promise.all([
             fetch('data/content.json'),
             fetch('data/ui_text.json'),
             fetch('data/ai_config.json'),
-            fetch('data/theme.json')
+            fetch('data/theme.json'),
+            fetch('data/onboarding.json')
         ]);
         
-        if (!contentRes.ok || !uiRes.ok || !aiRes.ok || !themeRes.ok) {
-            throw new Error(`HTTP error! content: ${contentRes.status}, ui: ${uiRes.status}, ai: ${aiRes.status}, theme: ${themeRes.status}`);
+        if (!contentRes.ok || !uiRes.ok || !aiRes.ok || !themeRes.ok || !onboardingRes.ok) {
+            throw new Error(`HTTP error! content: ${contentRes.status}, ui: ${uiRes.status}, ai: ${aiRes.status}, theme: ${themeRes.status}, onboarding: ${onboardingRes.status}`);
         }
         
         const content = await contentRes.json();
         const uiText = await uiRes.json();
         const aiConfig = await aiRes.json();
         const themeConfig = await themeRes.json();
+        const onboardingConfig = await onboardingRes.json();
         
         // Expose data globally so chat.js doesn't need to re-fetch
-        const data = { ...content, uiText, aiConfig, themeConfig };
+        const data = { ...content, uiText, aiConfig, themeConfig, onboardingConfig };
         window.appConfig = data;
 
         // 0. Setup UI Text Overrides
         if (Object.keys(uiText).length > 0) {
             const setById = (id, text) => { if(text && document.getElementById(id)) document.getElementById(id).textContent = text; };
             setById('settings-btn', uiText.btnAiSettings);
+            setById('how-to-use-btn', uiText.btnHowToUse);
             setById('toggle-anchors-btn', uiText.btnToggleHotspots);
             setById('toggle-skybox-btn', uiText.btnToggleBackground);
             setById('clear-chat', uiText.chatBtnClear);
             setById('send-btn', uiText.chatBtnSend);
+            setById('test-connection-btn', uiText.btnTestConnection);
+            setById('ask-hotspot-ai', uiText.hotspotAskAiButton);
+            setById('byok-storage-note', uiText.byokStorageNote);
             if(uiText.chatInputPlaceholder && document.getElementById('chat-input')) {
                 document.getElementById('chat-input').placeholder = uiText.chatInputPlaceholder;
             }
@@ -43,12 +49,13 @@ async function initializeWebsite() {
             const chatHeader = document.querySelector('.chat-header h2');
             if (chatHeader && uiText.chatTitle) chatHeader.textContent = uiText.chatTitle;
             
-            const tooltipGuide = document.querySelector('.ai-chat-btn .tooltip');
+            const tooltipGuide = document.getElementById('ai-chat-tooltip-label');
             if (tooltipGuide && uiText.chatTooltipGuide) tooltipGuide.textContent = uiText.chatTooltipGuide;
 
             const posterText = document.getElementById('poster-text');
             if (posterText && uiText.loadingModelText) posterText.textContent = uiText.loadingModelText;
         }
+        populateOnboarding(onboardingConfig);
 
         // 1. Setup Page Title and Description
         document.getElementById('page-title').textContent = data.title;
@@ -84,7 +91,9 @@ async function initializeWebsite() {
                 const aiBtn = document.getElementById('ai-chat-btn');
                 if (aiBtn) {
                     const tooltipText = window.appConfig.uiText?.chatTooltipGuide || 'Click to ask AI';
-                    aiBtn.innerHTML = `<div class="chat-icon-emoji">${activeThemeData.chatIcon}</div><div class="tooltip">${tooltipText}</div>`;
+                    aiBtn.innerHTML = `<div class="chat-icon-emoji">${activeThemeData.chatIcon}</div><div class="tooltip"><span id="ai-chat-tooltip-label" class="ai-chat-tooltip-label">${tooltipText}</span><span id="ai-tooltip-status" class="ai-tooltip-status is-unconfigured">● AI not configured</span></div>`;
+                    // Let chat.js restore the current AI status after the themed icon is rendered.
+                    window.dispatchEvent(new Event('ai-widget-rendered'));
                 }
             }
 
@@ -134,7 +143,7 @@ async function initializeWebsite() {
                 // Use the global tooltip for hover
                 const globalTooltip = document.getElementById('global-tooltip');
                 btn.addEventListener('mouseenter', () => {
-                    const hoverPrompt = uiText.hotspotHoverPrompt || "Click to ask AI";
+                    const hoverPrompt = uiText.hotspotHoverPrompt || "Click to explore";
                     globalTooltip.innerHTML = `<strong>${hotspotData.label}</strong><br><span style="font-size:0.8em;color:#aaa">${hoverPrompt}</span>`;
                     globalTooltip.classList.remove('hidden');
                 });
@@ -150,7 +159,7 @@ async function initializeWebsite() {
                     globalTooltip.classList.add('hidden');
                 });
 
-                // Add click event to trigger AI Guide & Camera Orbit
+                // Local feature details work independently of the optional AI guide.
                 btn.addEventListener('click', () => {
                     // Orbit Camera and shift Target Focus
                     if (hotspotData.position) {
@@ -160,10 +169,7 @@ async function initializeWebsite() {
                         modelViewer.cameraOrbit = hotspotData.orbit;
                         modelViewer.fieldOfView = 'auto';
                     }
-                    // Trigger AI Chat
-                    if (hotspotData.prompt && window.triggerHotspotAI) {
-                        window.triggerHotspotAI(hotspotData.prompt);
-                    }
+                    showHotspotInfo(hotspotData);
                 });
 
                 modelViewer.appendChild(btn);
@@ -226,6 +232,7 @@ async function initializeWebsite() {
 
         // Reveal the body now that the theme is applied
         document.body.classList.add('theme-loaded');
+        window.setTimeout(openOnboardingIfNeeded, 300);
 
     } catch (error) {
         console.error("Failed to load or parse JSON configs:", error);
@@ -236,6 +243,90 @@ async function initializeWebsite() {
         document.body.classList.add('theme-loaded');
     }
 }
+
+// === Local Hotspot Details ===
+const hotspotInfoCard = document.getElementById('hotspot-info-card');
+const hotspotInfoTitle = document.getElementById('hotspot-info-title');
+const hotspotInfoDescription = document.getElementById('hotspot-info-description');
+const closeHotspotInfoBtn = document.getElementById('close-hotspot-info');
+const askHotspotAiBtn = document.getElementById('ask-hotspot-ai');
+let activeHotspot = null;
+
+function showHotspotInfo(hotspotData) {
+    if (!hotspotInfoCard) return;
+    activeHotspot = hotspotData;
+    hotspotInfoTitle.textContent = hotspotData.label || 'Feature details';
+    hotspotInfoDescription.textContent = hotspotData.description || 'Explore this feature in the 3D model.';
+    askHotspotAiBtn.hidden = !hotspotData.prompt;
+    hotspotInfoCard.classList.remove('hidden');
+}
+
+if (closeHotspotInfoBtn) {
+    closeHotspotInfoBtn.addEventListener('click', () => hotspotInfoCard.classList.add('hidden'));
+}
+
+if (askHotspotAiBtn) {
+    askHotspotAiBtn.addEventListener('click', () => {
+        if (activeHotspot?.prompt && window.triggerHotspotAI) {
+            window.triggerHotspotAI(activeHotspot.prompt);
+        }
+    });
+}
+
+// === First-visit Onboarding ===
+const onboardingModal = document.getElementById('onboarding-modal');
+const onboardingOpenBtn = document.getElementById('how-to-use-btn');
+const onboardingCloseBtn = document.getElementById('close-onboarding');
+const onboardingDismissBtn = document.getElementById('dismiss-onboarding');
+const ONBOARDING_STORAGE_KEY = 'specimen_onboarding_seen';
+let onboardingReturnFocus = null;
+
+function populateOnboarding(config = {}) {
+    const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element && value) element.textContent = value;
+    };
+    setText('onboarding-title', config.title);
+    setText('onboarding-intro', config.intro);
+    setText('dismiss-onboarding', config.dismissLabel);
+
+    const stepsList = document.getElementById('onboarding-steps');
+    if (stepsList && Array.isArray(config.steps)) {
+        stepsList.replaceChildren();
+        config.steps.forEach(step => {
+            const item = document.createElement('li');
+            item.textContent = step;
+            stepsList.appendChild(item);
+        });
+    }
+}
+
+function openOnboarding() {
+    if (!onboardingModal) return;
+    onboardingReturnFocus = document.activeElement;
+    onboardingModal.style.display = 'block';
+    onboardingModal.setAttribute('aria-hidden', 'false');
+    onboardingCloseBtn?.focus();
+}
+
+function closeOnboarding(remember = false) {
+    if (!onboardingModal) return;
+    if (remember) localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+    onboardingModal.style.display = 'none';
+    onboardingModal.setAttribute('aria-hidden', 'true');
+    onboardingReturnFocus?.focus?.();
+}
+
+function openOnboardingIfNeeded() {
+    if (!localStorage.getItem(ONBOARDING_STORAGE_KEY)) openOnboarding();
+}
+
+onboardingOpenBtn?.addEventListener('click', openOnboarding);
+onboardingCloseBtn?.addEventListener('click', () => closeOnboarding(false));
+onboardingDismissBtn?.addEventListener('click', () => closeOnboarding(true));
+onboardingModal?.addEventListener('click', (event) => {
+    if (event.target === onboardingModal) closeOnboarding(false);
+});
 
 // === Modal Logic for Fullscreen Image Viewing ===
 
@@ -269,6 +360,9 @@ closeBtn.onclick = function() {
 
 // Close modal with Escape key
 document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape" && onboardingModal?.style.display === "block") {
+        closeOnboarding(false);
+    }
     if (event.key === "Escape" && modal.style.display === "block") {
         modal.style.display = "none";
     }
@@ -325,4 +419,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Run initialization when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', initializeWebsite);
-

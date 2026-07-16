@@ -1,6 +1,9 @@
 {
   "errorLoadConfig": "Error: Failed to load configuration data. Check console for details.",
-  "hotspotHoverPrompt": "Click to ask AI",
+  "btnHowToUse": "How to Use",
+  "hotspotHoverPrompt": "Click to explore",
+  "hotspotAskAiButton": "Ask AI for more",
+  "chatTooltipGuide": "Ask the AI Guide",
   "modalAskAIPrefix": "Can you tell me more about the photo: ",
   "modalBtnAskAI": "Ask AI About This",
   "chatTyping": "typing...",
@@ -8,5 +11,15 @@
   "chatNoApiKey": "Please configure your API Key in the settings (gear icon) first.",
   "chatSettingsSaved": "Settings saved successfully! You can now chat.",
   "chatConnectionFailed": "Connection failed:",
-  "loadingModelText": "Loading 3D Model..."
+  "chatResponseTruncated": "The AI response reached its length limit. Ask a follow-up question to continue.",
+  "btnTestConnection": "Test Connection",
+  "aiTestingConnection": "Testing connection…",
+  "aiConnectionSuccess": "Connection verified. Save this configuration to use it in the guide.",
+  "aiConnectionNetworkError": "Could not reach the AI service. Check the Base URL, network, and CORS support.",
+  "aiStatusUnconfigured": "AI not configured",
+  "aiStatusConfigured": "AI configured; connection not tested",
+  "aiStatusVerified": "AI connection verified",
+  "aiStatusError": "AI connection failed",
+  "loadingModelText": "Loading 3D Model...",
+  "byokStorageNote": "Provide your own API credentials to enable the AI Guide. They are stored only in this browser's LocalStorage."
 }

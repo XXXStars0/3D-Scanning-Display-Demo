@@ -1,0 +1,10 @@
+{
+  "title": "How to Use This Demo",
+  "intro": "Explore the specimen on your own, then use AI only when you want a deeper explanation.",
+  "steps": [
+    "Drag to rotate and scroll to zoom the 3D model.",
+    "Click gold markers to focus on a feature and read its local description.",
+    "AI is optional. Open AI Settings to enter your own compatible API key, then choose Ask AI for more from a feature card."
+  ],
+  "dismissLabel": "Got it"
+}

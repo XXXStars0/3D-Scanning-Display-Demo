@@ -16,6 +16,9 @@ const apiKeyInput = document.getElementById('api-key');
 const apiModelInput = document.getElementById('api-model');
 const settingsForm = document.getElementById('settings-form');
 const resetSettingsBtn = document.getElementById('reset-settings-btn');
+const testConnectionBtn = document.getElementById('test-connection-btn');
+const connectionStatus = document.getElementById('connection-status');
+const aiStatusIndicator = document.getElementById('ai-status-indicator');
 
 const floatingChatPanel = document.getElementById('floating-chat-panel');
 const aiChatBtn = document.getElementById('ai-chat-btn');
@@ -28,31 +31,57 @@ let knowledgeBase = ""; // Will store our knowledge text
 let activeApiUrl = 'https://api.deepseek.com/v1/chat/completions';
 let activeApiKey = '';
 let activeApiModel = 'deepseek-v4-flash';
+let lastVerifiedSignature = '';
+let currentAiStatus = 'unconfigured';
 
-// Load configuration from local .env file (if running locally)
-async function loadEnvConfig() {
-    try {
-        const response = await fetch('.env');
-        if (response.ok) {
-            const text = await response.text();
-            const lines = text.split('\n');
-            lines.forEach(line => {
-                const parts = line.split('=');
-                if (parts.length >= 2) {
-                    const key = parts[0].trim();
-                    const value = parts.slice(1).join('=').trim().replace(/^["'](.*)["']$/, '$1'); // Strip quotes if any
-                    // Always override active config if .env has values (Local .env overrides LocalStorage)
-                    if (key === 'API_URL' && value) activeApiUrl = value;
-                    if (key === 'API_KEY' && value) activeApiKey = value;
-                    if (key === 'API_MODEL' && value) activeApiModel = value;
-                }
-            });
-            console.log("Loaded local .env config.");
-        }
-    } catch (e) {
-        // Ignore, .env doesn't exist in production or fetch failed
+function getConfigSignature(url = activeApiUrl, key = activeApiKey, model = activeApiModel) {
+    return `${url}\u0000${key}\u0000${model}`;
+}
+
+function setAiStatus(state) {
+    currentAiStatus = state;
+    const labels = {
+        unconfigured: window.appConfig?.uiText?.aiStatusUnconfigured || 'AI not configured',
+        configured: window.appConfig?.uiText?.aiStatusConfigured || 'AI configured; connection not tested',
+        verified: window.appConfig?.uiText?.aiStatusVerified || 'AI connection verified',
+        error: window.appConfig?.uiText?.aiStatusError || 'AI connection failed'
+    };
+
+    // Update the persistent status shown in the AI Guide header.
+    if (aiStatusIndicator) {
+        aiStatusIndicator.className = `ai-status-indicator is-${state}`;
+        aiStatusIndicator.setAttribute('aria-label', labels[state]);
+        aiStatusIndicator.title = labels[state];
+    }
+
+    // Update the text status shown when the floating AI icon is hovered.
+    const tooltipStatus = document.getElementById('ai-tooltip-status');
+    if (tooltipStatus) {
+        tooltipStatus.className = `ai-tooltip-status is-${state}`;
+        tooltipStatus.textContent = `● ${labels[state]}`;
     }
 }
+
+function setConnectionFeedback(state = '', message = '') {
+    if (!connectionStatus) return;
+    connectionStatus.className = `connection-status${state ? ` is-${state}` : ''}`;
+    connectionStatus.textContent = message;
+}
+
+function getApiErrorMessage(status) {
+    const messages = {
+        400: 'The request was invalid. Check the Base URL and model name.',
+        401: 'The API key is invalid or expired.',
+        402: 'The AI account has insufficient balance or credits.',
+        403: 'The API key does not have permission to use this model or service.',
+        404: 'The API endpoint or model was not found. Check the Base URL and model name.',
+        429: 'The AI service rate limit has been reached. Try again shortly.'
+    };
+    return messages[status] || `The AI service returned an unexpected error (${status}).`;
+}
+
+// The themed icon is recreated by script.js, so apply the latest status again.
+window.addEventListener('ai-widget-rendered', () => setAiStatus(currentAiStatus));
 
 // Load configuration from LocalStorage
 function loadConfig() {
@@ -80,10 +109,53 @@ function saveConfig() {
     localStorage.setItem('ai_api_url', activeApiUrl);
     localStorage.setItem('ai_api_key', activeApiKey);
     localStorage.setItem('ai_api_model', activeApiModel);
+    setAiStatus(activeApiKey ? (getConfigSignature() === lastVerifiedSignature ? 'verified' : 'configured') : 'unconfigured');
     
     settingsModal.style.display = 'none';
     const msg = window.appConfig?.uiText?.chatSettingsSaved || 'Settings saved successfully! You can now chat.';
     addMessage('System', msg);
+}
+
+async function testConnection() {
+    const apiUrl = apiUrlInput.value.trim();
+    const apiKey = apiKeyInput.value.trim();
+    const apiModel = apiModelInput.value.trim();
+
+    if (!apiKey) {
+        setConnectionFeedback('error', window.appConfig?.uiText?.chatNoApiKey || 'Please enter an API key before testing.');
+        return;
+    }
+
+    testConnectionBtn.disabled = true;
+    setConnectionFeedback('testing', window.appConfig?.uiText?.aiTestingConnection || 'Testing connection…');
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: apiModel,
+                messages: [{ role: 'user', content: 'Reply with OK.' }],
+                max_tokens: 1,
+                temperature: 0,
+                stream: false
+            })
+        });
+        if (!response.ok) throw new Error(getApiErrorMessage(response.status));
+
+        lastVerifiedSignature = getConfigSignature(apiUrl, apiKey, apiModel);
+        if (lastVerifiedSignature === getConfigSignature()) setAiStatus('verified');
+        setConnectionFeedback('success', window.appConfig?.uiText?.aiConnectionSuccess || 'Connection verified. Save this configuration to use it in the guide.');
+    } catch (error) {
+        if (getConfigSignature(apiUrl, apiKey, apiModel) === getConfigSignature()) setAiStatus('error');
+        setConnectionFeedback('error', error instanceof TypeError
+            ? (window.appConfig?.uiText?.aiConnectionNetworkError || 'Could not reach the AI service. Check the Base URL, network, and CORS support.')
+            : error.message);
+    } finally {
+        testConnectionBtn.disabled = false;
+    }
 }
 
 // Fetch knowledge base content
@@ -185,8 +257,7 @@ ${knowledgeBase}`;
         if (chatHistory.contains(typingMsg)) chatHistory.removeChild(typingMsg);
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API Error ${response.status}: ${errorText}`);
+            throw new Error(getApiErrorMessage(response.status));
         }
 
         // Create the message container for streaming
@@ -199,74 +270,90 @@ ${knowledgeBase}`;
         const reader = response.body.getReader();
         const decoder = new TextDecoder('utf-8');
         let rawContent = ''; // Accumulate the raw markdown
+        let streamBuffer = ''; // Preserve an incomplete SSE line between network chunks
+        let hitTokenLimit = false;
+
+        const renderAssistantResponse = () => {
+            // Check and execute [ACTION: id] camera commands
+            const actionRegex = /\[\s*ACTION\s*:\s*([^\]]+)\s*\]/ig;
+            let match;
+            let displayContent = rawContent;
+            while ((match = actionRegex.exec(rawContent)) !== null) {
+                const actionId = match[1].trim();
+                const modelViewer = document.getElementById('model-viewer');
+
+                if (modelViewer && window.appConfig) {
+                    let targetOrbit = null;
+
+                    // 1. Check if action matches a hotspot ID
+                    const hotspots = window.appConfig.hotspots || [];
+                    const hotspot = hotspots.find(h => h.id === actionId || h.slot === actionId);
+                    if (hotspot) {
+                        if (hotspot.position) modelViewer.cameraTarget = hotspot.position;
+                        if (hotspot.orbit) targetOrbit = hotspot.orbit;
+                    }
+
+                    // 2. Check if action matches aiConfig generic actions
+                    if (!hotspot && window.appConfig.aiConfig?.actions) {
+                        const actionVal = window.appConfig.aiConfig.actions[actionId];
+                        if (actionVal) {
+                            modelViewer.cameraTarget = 'auto auto auto';
+                            targetOrbit = actionVal;
+                        }
+                    }
+
+                    if (targetOrbit) {
+                        modelViewer.cameraOrbit = targetOrbit;
+                        modelViewer.fieldOfView = 'auto';
+                    }
+                }
+                displayContent = displayContent.replace(match[0], '');
+            }
+
+            msgDiv.innerHTML = '<strong>[Guide]</strong> <br>' + marked.parse(displayContent);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        };
+
+        const processSseLine = (line) => {
+            if (!line.startsWith('data: ') || line.trim() === 'data: [DONE]') return;
+            try {
+                const data = JSON.parse(line.slice(6));
+                const delta = data.choices?.[0]?.delta?.content;
+                if (data.choices?.[0]?.finish_reason === 'length') hitTokenLimit = true;
+                if (delta) {
+                    rawContent += delta;
+                    renderAssistantResponse();
+                }
+            } catch (error) {
+                // A complete but invalid SSE event is ignored; incomplete events stay buffered below.
+                console.warn('Ignored malformed AI stream event.', error);
+            }
+        };
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            
-            for (const line of lines) {
-                if (line.startsWith('data: ') && line.trim() !== 'data: [DONE]') {
-                    try {
-                        const data = JSON.parse(line.slice(6));
-                        if (data.choices[0].delta && data.choices[0].delta.content) {
-                            rawContent += data.choices[0].delta.content;
-                            
-                            // Check and execute [ACTION: id] camera commands
-                            const actionRegex = /\[\s*ACTION\s*:\s*([^\]]+)\s*\]/ig;
-                            let match;
-                            let displayContent = rawContent;
-                            while ((match = actionRegex.exec(rawContent)) !== null) {
-                                const actionId = match[1].trim();
-                                const modelViewer = document.getElementById('model-viewer');
-                                
-                                if (modelViewer && window.appConfig) {
-                                    let targetOrbit = null;
-                                    
-                                    // 1. Check if action matches a hotspot ID
-                                    const hotspots = window.appConfig.hotspots || [];
-                                    const hotspot = hotspots.find(h => h.id === actionId || h.slot === actionId);
-                                    if (hotspot) {
-                                        if (hotspot.position) modelViewer.cameraTarget = hotspot.position;
-                                        if (hotspot.orbit) targetOrbit = hotspot.orbit;
-                                    }
-                                    
-                                    // 2. Check if action matches aiConfig generic actions
-                                    if (!hotspot && window.appConfig.aiConfig?.actions) {
-                                        const actionVal = window.appConfig.aiConfig.actions[actionId];
-                                        if (actionVal) {
-                                            modelViewer.cameraTarget = 'auto auto auto'; // Reset target to center
-                                            targetOrbit = actionVal;
-                                        }
-                                    }
-                                    
-                                    if (targetOrbit) {
-                                        modelViewer.cameraOrbit = targetOrbit;
-                                        modelViewer.fieldOfView = 'auto';
-                                    }
-                                }
-                                // Remove it from the text shown to user
-                                displayContent = displayContent.replace(match[0], '');
-                            }
 
-                            // Re-parse the entire accumulated markdown on each chunk
-                            msgDiv.innerHTML = '<strong>[Guide]</strong> <br>' + marked.parse(displayContent);
-                            chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
-                        }
-                    } catch (e) {
-                        // Ignore partial JSON parsing errors during stream
-                    }
-                }
-            }
+            streamBuffer += decoder.decode(value, { stream: true });
+            const lines = streamBuffer.split(/\r?\n/);
+            streamBuffer = lines.pop();
+            lines.forEach(processSseLine);
         }
+
+        streamBuffer += decoder.decode();
+        if (streamBuffer.trim()) processSseLine(streamBuffer);
+        if (hitTokenLimit) {
+            const notice = window.appConfig?.uiText?.chatResponseTruncated || 'The AI response reached its length limit. Ask a follow-up question to continue.';
+            addMessage('System', notice);
+        }
+        setAiStatus('verified');
 
     } catch (error) {
         // Handle and display errors gracefully
         if(chatHistory.contains(typingMsg)) chatHistory.removeChild(typingMsg);
         const failText = window.appConfig?.uiText?.chatConnectionFailed || 'Connection failed:';
         addMessage('System', `${failText} ${error.message}`);
+        setAiStatus('error');
     }
 }
 
@@ -291,7 +378,10 @@ resetSettingsBtn.addEventListener('click', () => {
     apiUrlInput.value = 'https://api.deepseek.com/v1/chat/completions';
     apiKeyInput.value = '';
     apiModelInput.value = 'deepseek-v4-flash';
+    setConnectionFeedback();
 });
+
+testConnectionBtn.addEventListener('click', testConnection);
 
 // Close settings modal if clicking outside the modal content
 window.addEventListener('click', (e) => {
@@ -332,9 +422,9 @@ window.triggerHotspotAI = function(promptText) {
 
 // Initialization on load
 document.addEventListener('DOMContentLoaded', async () => {
-    loadConfig();       // 1. Load from localStorage
-    await loadEnvConfig(); // 2. Override with .env if present
-    populateSettingsForm(); // 3. Sync UI visually just once
+    loadConfig();
+    populateSettingsForm();
+    setAiStatus(activeApiKey ? 'configured' : 'unconfigured');
     loadKnowledgeBase();
     
     // Fetch custom welcome message from data/ai_config.json

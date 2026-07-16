@@ -10,6 +10,7 @@
       "position": "-0.015 0.2 0",
       "normal": "0 0 1",
       "label": "Happy Ghast Face",
+      "description": "The specimen's closed eyes and gentle smile give it a friendly expression, distinct from the aggressive look of a traditional Ghast.",
       "prompt": "Tell me about this closed-eye smiling face. How does it differ from a normal Ghast?",
       "orbit": "0deg 85deg 0.7m"
     },
@@ -19,6 +20,7 @@
       "position": "-0.015 0.05 0.05",
       "normal": "1 0 0",
       "label": "Tissue Box Base",
+      "description": "The Happy Ghast is posed on a tissue box, creating a deliberately playful scale contrast between the soft cube form and an everyday object.",
       "prompt": "What is this tissue box base it is sitting on? Is it a standard Kleenex box?",
       "orbit": "45deg 75deg 1.2m"
     },
@@ -28,6 +30,7 @@
       "position": "-0.010 0.268 -0.025",
       "normal": "0 1 0",
       "label": "Ghast Harness",
+      "description": "A harness wraps over the top of the Ghast, adding a functional-looking detail that suggests how this friendly creature could be guided or ridden.",
       "prompt": "Can you explain the harness on this Ghast?",
       "orbit": "0deg 45deg 0.8m"
     }

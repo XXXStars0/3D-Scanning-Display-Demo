@@ -85,6 +85,51 @@ body {
     font-size: 2.5rem;
 }
 
+.header-actions {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.header-action {
+    min-width: 130px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-status-indicator {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--mc-border-light);
+    border-radius: 50%;
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
+}
+
+.ai-status-indicator.is-unconfigured { background-color: #777777; }
+.ai-status-indicator.is-configured { background-color: #ffaa00; }
+.ai-status-indicator.is-verified { background-color: #55cc55; }
+.ai-status-indicator.is-error { background-color: #ff5555; }
+
+.chat-title-with-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.connection-status {
+    min-height: 1.4em;
+    margin: 12px 0 0;
+    font-size: 0.85rem;
+}
+
+.connection-status.is-success { color: #55aa55; }
+.connection-status.is-error { color: #cc3333; }
+.connection-status.is-testing { color: var(--mc-text-dark); }
+
 /* Main Grid Container - 2 Columns */
 .container {
     max-width: 1400px;
@@ -171,6 +216,7 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     transition: background-image 0.3s ease;
+    position: relative;
 }
 
 .model-container.with-skybox {
@@ -321,6 +367,80 @@ model-viewer {
     text-shadow: 1px 1px 0 #000;
 }
 
+/* Hotspot details sit over the viewer, preserving the page's one-screen layout. */
+.hotspot-info-card {
+    position: absolute;
+    z-index: 5;
+    right: 16px;
+    bottom: 16px;
+    width: min(300px, calc(100% - 32px));
+    padding: 14px 38px 14px 14px;
+    box-sizing: border-box;
+    background-color: var(--mc-bg-color);
+    border: 3px solid;
+    border-top-color: var(--mc-border-light);
+    border-left-color: var(--mc-border-light);
+    border-bottom-color: var(--mc-border-dark);
+    border-right-color: var(--mc-border-dark);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.hotspot-info-card.hidden {
+    display: none;
+}
+
+.hotspot-info-card h3 {
+    margin: 0 0 8px;
+    color: var(--mc-text-dark);
+    font-family: var(--font-title);
+    font-size: 1.05rem;
+}
+
+.hotspot-info-card p {
+    margin: 0 0 12px;
+    color: var(--mc-text-dark);
+    font-size: 0.9rem;
+}
+
+.hotspot-card-close {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--mc-text-dark);
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+/* Onboarding is a viewport overlay, not a layout panel. */
+.onboarding-panel {
+    width: min(520px, calc(100% - 32px));
+    height: auto;
+    max-height: 80vh;
+    overflow-y: auto;
+    image-rendering: auto;
+}
+
+.onboarding-panel .panel-content {
+    color: var(--mc-text-dark);
+}
+
+.onboarding-steps {
+    margin: 14px 0 20px;
+    padding-left: 24px;
+}
+
+.onboarding-steps li {
+    margin: 10px 0;
+}
+
+.onboarding-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .close-btn {
     position: absolute;
     top: 20px;
@@ -378,6 +498,27 @@ a.link:hover {
     .gallery-section {
         grid-row: 3 / 4;
         grid-column: 1 / 2;
+    }
+
+    .banner h1 {
+        font-size: 1.8rem;
+        left: 15px;
+    }
+
+    .header-actions {
+        right: 15px;
+        gap: 6px;
+    }
+
+    .header-action {
+        min-width: 0;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .ai-status-indicator {
+        width: 10px;
+        height: 10px;
     }
 }
 
@@ -526,7 +667,7 @@ a.link:hover {
 
 .tooltip {
     visibility: hidden;
-    width: 120px;
+    width: 170px;
     background-color: var(--mc-bg-color);
     color: var(--mc-text-dark);
     text-align: center;
@@ -536,7 +677,7 @@ a.link:hover {
     z-index: 1;
     bottom: 100%;
     left: 50%;
-    margin-left: -60px;
+    margin-left: -85px;
     margin-bottom: 10px;
     font-family: var(--font-body);
     font-size: 0.8rem;
@@ -544,6 +685,22 @@ a.link:hover {
     opacity: 0;
     transition: opacity 0.3s;
 }
+
+.ai-chat-tooltip-label {
+    display: block;
+}
+
+.ai-tooltip-status {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.ai-tooltip-status.is-unconfigured { color: #dddddd; }
+.ai-tooltip-status.is-configured { color: #ffcc55; }
+.ai-tooltip-status.is-verified { color: #55dd55; }
+.ai-tooltip-status.is-error { color: #ff7777; }
 
 .tooltip::after {
     content: "";
@@ -919,6 +1076,17 @@ body.theme-cornell .tooltip::after {
     border-color: #333 transparent transparent transparent;
 }
 
+body.theme-cornell .ai-status-indicator {
+    width: 9px;
+    height: 9px;
+    border-width: 1px;
+    box-shadow: none;
+}
+
+body.theme-cornell .ai-tooltip-status {
+    font-weight: 500;
+}
+
 body.theme-cornell .hotspot-btn {
     border-radius: 50%;
     background-color: #b31b1b;
@@ -930,6 +1098,26 @@ body.theme-cornell .hotspot-btn {
 body.theme-cornell .hotspot-btn:hover {
     background-color: #901515;
     transform: scale(1.15);
+}
+
+body.theme-cornell .hotspot-info-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+body.theme-cornell .hotspot-info-card h3,
+body.theme-cornell .hotspot-info-card p,
+body.theme-cornell .hotspot-card-close {
+    color: #222222;
+}
+
+body.theme-cornell .connection-status.is-success { color: #287d28; }
+body.theme-cornell .connection-status.is-error { color: #b31b1b; }
+
+body.theme-cornell .onboarding-panel {
+    border-radius: 8px;
 }
 
 body.theme-cornell a.link {
