@@ -305,6 +305,8 @@ const toggleAutoRotateBtn = document.getElementById(
 );
 
 const modelWrapper = document.getElementById('model-wrapper');
+const modelViewer = document.getElementById('model-viewer');
+
 
 function getModelControlText() {
     const uiText = window.appConfig?.uiText || {};
@@ -330,13 +332,17 @@ function getModelControlText() {
     };
 }
 
-// Show / hide hotspots
-if (toggleAnchorsBtn && modelWrapper) {
-    toggleAnchorsBtn.addEventListener('click', () => {
-        const hotspotsAreHidden =
-            modelWrapper.classList.toggle('hide-anchors');
 
-        const labels = getModelControlText();
+/* ----------------------------------------
+   Synchronize initial button states
+   ---------------------------------------- */
+
+function updateModelControlButtons() {
+    const labels = getModelControlText();
+
+    if (toggleAnchorsBtn && modelWrapper) {
+        const hotspotsAreHidden =
+            modelWrapper.classList.contains('hide-anchors');
 
         toggleAnchorsBtn.textContent = hotspotsAreHidden
             ? labels.showHotspots
@@ -346,16 +352,11 @@ if (toggleAnchorsBtn && modelWrapper) {
             'aria-pressed',
             String(!hotspotsAreHidden)
         );
-    });
-}
+    }
 
-// Enable / disable environment
-if (toggleSkyboxBtn && modelWrapper) {
-    toggleSkyboxBtn.addEventListener('click', () => {
+    if (toggleSkyboxBtn && modelWrapper) {
         const environmentIsEnabled =
-            modelWrapper.classList.toggle('with-skybox');
-
-        const labels = getModelControlText();
+            modelWrapper.classList.contains('with-skybox');
 
         toggleSkyboxBtn.textContent = environmentIsEnabled
             ? labels.disableEnvironment
@@ -365,56 +366,11 @@ if (toggleSkyboxBtn && modelWrapper) {
             'aria-pressed',
             String(environmentIsEnabled)
         );
-    });
-}
+    }
 
-
-// Reset camera position
-if (resetModelBtn) {
-    resetModelBtn.addEventListener('click', () => {
-        const modelViewer =
-            document.getElementById('model-viewer');
-
-        if (!modelViewer) {
-            return;
-        }
-
-        const defaultView =
-            window.appConfig?.aiConfig?.actions?.default_view;
-
-        // Return the camera target to the center of the model.
-        modelViewer.cameraTarget = 'auto auto auto';
-
-        // Restore the configured default camera orbit.
-        if (defaultView) {
-            modelViewer.cameraOrbit = defaultView;
-        } else {
-            modelViewer.cameraOrbit = '0deg 75deg 105%';
-        }
-
-        modelViewer.fieldOfView = 'auto';
-
-        // Immediately update the camera when supported.
-        if (typeof modelViewer.jumpCameraToGoal === 'function') {
-            modelViewer.jumpCameraToGoal();
-        }
-    });
-}
-
-// Enable / disable automatic rotation
-if (toggleAutoRotateBtn) {
-    toggleAutoRotateBtn.addEventListener('click', () => {
-        const modelViewer =
-            document.getElementById('model-viewer');
-
-        if (!modelViewer) {
-            return;
-        }
-
-        const autoRotateIsEnabled = !modelViewer.autoRotate;
-        modelViewer.autoRotate = autoRotateIsEnabled;
-
-        const labels = getModelControlText();
+    if (toggleAutoRotateBtn && modelViewer) {
+        const autoRotateIsEnabled =
+            modelViewer.hasAttribute('auto-rotate');
 
         toggleAutoRotateBtn.textContent = autoRotateIsEnabled
             ? labels.disableAutoRotate
@@ -424,8 +380,95 @@ if (toggleAutoRotateBtn) {
             'aria-pressed',
             String(autoRotateIsEnabled)
         );
+    }
+}
+
+
+/* ----------------------------------------
+   Show / hide hotspots
+   ---------------------------------------- */
+
+if (toggleAnchorsBtn && modelWrapper) {
+    toggleAnchorsBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        modelWrapper.classList.toggle('hide-anchors');
+        updateModelControlButtons();
     });
 }
+
+
+/* ----------------------------------------
+   Enable / disable environment
+   ---------------------------------------- */
+
+if (toggleSkyboxBtn && modelWrapper) {
+    toggleSkyboxBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        modelWrapper.classList.toggle('with-skybox');
+        updateModelControlButtons();
+    });
+}
+
+
+/* ----------------------------------------
+   Reset camera position
+   ---------------------------------------- */
+
+if (resetModelBtn && modelViewer) {
+    resetModelBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const defaultView =
+            window.appConfig?.aiConfig?.actions?.default_view;
+
+        modelViewer.cameraTarget = 'auto auto auto';
+        modelViewer.cameraOrbit =
+            defaultView || '0deg 75deg 105%';
+        modelViewer.fieldOfView = 'auto';
+
+        if (
+            typeof modelViewer.jumpCameraToGoal === 'function'
+        ) {
+            modelViewer.jumpCameraToGoal();
+        }
+    });
+}
+
+
+/* ----------------------------------------
+   Enable / disable automatic rotation
+   ---------------------------------------- */
+
+if (toggleAutoRotateBtn && modelViewer) {
+    toggleAutoRotateBtn.addEventListener(
+        'click',
+        function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const autoRotateIsEnabled =
+                modelViewer.hasAttribute('auto-rotate');
+
+            if (autoRotateIsEnabled) {
+                modelViewer.removeAttribute('auto-rotate');
+            } else {
+                modelViewer.setAttribute('auto-rotate', '');
+            }
+
+            updateModelControlButtons();
+        }
+    );
+}
+
+
+/* Set correct button labels when the page loads */
+
+updateModelControlButtons();
 
 
 // === Hotspot Coordinate Picker (Developer Mode) ===
