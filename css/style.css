@@ -963,6 +963,7 @@ body.theme-cornell a.link:hover {
 
     font-family: 'Minecraft', monospace;
     font-size: 0.85rem;
+    letter-spacing: 0.02em;
 }
 
 .model-controls button:focus-visible {
@@ -981,6 +982,7 @@ body.theme-cornell a.link:hover {
     margin: 12px auto 0;
     padding: 8px 12px;
 
+    font-family: 'Minecraft', monospace;
     font-size: 0.85rem;
     line-height: 1.4;
     text-align: center;
