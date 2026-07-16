@@ -26,8 +26,28 @@ async function initializeWebsite() {
         if (Object.keys(uiText).length > 0) {
             const setById = (id, text) => { if(text && document.getElementById(id)) document.getElementById(id).textContent = text; };
             setById('settings-btn', uiText.btnAiSettings);
-            setById('toggle-anchors-btn', uiText.btnToggleHotspots);
-            setById('toggle-skybox-btn', uiText.btnToggleBackground);
+            setById('settings-btn', uiText.btnAiSettings);
+            setById(
+                'toggle-anchors-btn',
+                uiText.btnHideHotspots || 'Hide Hotspots'
+            );
+            setById(
+                'toggle-skybox-btn',
+                uiText.btnEnableEnvironment || 'Enable Environment'
+            );
+            setById(
+                'reset-model-btn',
+                uiText.btnResetView || 'Reset View'
+            );
+            setById(
+                'toggle-auto-rotate-btn',
+                uiText.btnEnableAutoRotate || 'Enable Auto Rotate'
+            );
+            setById(
+                'model-guide',
+                uiText.modelGuide ||
+                    'Drag to rotate · Scroll to zoom · Click markers to explore'
+            );
             setById('clear-chat', uiText.chatBtnClear);
             setById('send-btn', uiText.chatBtnSend);
             if(uiText.chatInputPlaceholder && document.getElementById('chat-input')) {
