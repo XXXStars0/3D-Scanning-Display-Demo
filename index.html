@@ -37,61 +37,48 @@
         </section>
 
         <!-- 3D Model Viewer Section -->
-        <section class="viewer-section">
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>Interactive 3D Model</h2>
-                </div>
-                <div class="model-container with-skybox" id="model-wrapper">
-                    <model-viewer id="model-viewer" 
-                                  src="" 
-                                  camera-controls 
-                                  min-camera-orbit="auto auto 0m"
-                                  shadow-intensity="1"
-                                  ar>
-                        <!-- Loading Poster -->
-                        <div slot="poster" id="model-poster" class="model-poster">
-                            <div id="poster-text" class="poster-text">Loading Model...</div>
-                        </div>
-                    </model-viewer>
-                </div>
-                <!-- 3D Viewer Controls -->
-                <div class="panel-content" style="display: flex; gap: 10px; padding-top: 10px; justify-content: flex-end;">
-                    <button
-                        id="toggle-anchors-btn"
-                        type="button"
-                        aria-pressed="true"
-                    >
-                        Hide Hotspots
-                    </button>
-                
-                    <button
-                        id="toggle-skybox-btn"
-                        type="button"
-                        aria-pressed="false"
-                    >
-                        Enable Environment
-                    </button>
-                
-                    <button id="reset-model-btn" type="button">
-                        Reset View
-                    </button>
-                
-                    <button
-                        id="toggle-auto-rotate-btn"
-                        type="button"
-                        aria-pressed="false"
-                    >
-                        Enable Auto Rotate
-                    </button>
-                </div>
-                
-                <div class="model-guide" id="model-guide">
-                    Drag to rotate · Scroll to zoom · Click markers to explore
-                </div>
-                </div>
-            </div>
-        </section>
+        <div class="panel-content model-controls">
+            <button
+                id="toggle-anchors-btn"
+                type="button"
+                aria-pressed="true"
+            >
+                Hide Hotspots
+            </button>
+        
+            <button
+                id="toggle-skybox-btn"
+                type="button"
+                aria-pressed="true"
+            >
+                Disable Environment
+            </button>
+        
+            <button
+                id="reset-model-btn"
+                type="button"
+            >
+                Reset View
+            </button>
+        
+            <button
+                id="toggle-auto-rotate-btn"
+                type="button"
+                aria-pressed="false"
+            >
+                Enable Auto Rotate
+            </button>
+        </div>
+        
+        <div
+            class="model-guide"
+            id="model-guide"
+            role="note"
+        >
+            Drag to rotate · Scroll to zoom · Click markers to explore
+        </div>
+    </div>
+</section>
 
         <!-- Gallery Section -->
         <section class="gallery-section">
