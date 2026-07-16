@@ -954,16 +954,27 @@ body.theme-cornell a.link:hover {
     align-items: center;
     gap: 10px;
     margin-top: 14px;
+
+    font-family: 'Minecraft', monospace;
 }
 
 .model-controls button {
     min-height: 42px;
     padding: 9px 14px;
-    cursor: pointer;
 
     font-family: 'Minecraft', monospace;
     font-size: 0.85rem;
+    line-height: 1.2;
     letter-spacing: 0.02em;
+    text-align: center;
+
+    cursor: pointer;
+}
+
+.model-controls button,
+.model-controls button span,
+.model-controls button strong {
+    font-family: 'Minecraft', monospace;
 }
 
 .model-controls button:focus-visible {
@@ -985,13 +996,16 @@ body.theme-cornell a.link:hover {
     font-family: 'Minecraft', monospace;
     font-size: 0.85rem;
     line-height: 1.4;
+    letter-spacing: 0.02em;
     text-align: center;
 
     opacity: 0.8;
 }
 
 
-/* Stack controls on smaller screens */
+/* ========================================
+   Responsive model controls
+   ======================================== */
 
 @media (max-width: 600px) {
     .model-controls {
@@ -1002,9 +1016,12 @@ body.theme-cornell a.link:hover {
 
     .model-controls button {
         width: 100%;
+        font-family: 'Minecraft', monospace;
+        font-size: 0.8rem;
     }
 
     .model-guide {
+        font-family: 'Minecraft', monospace;
         font-size: 0.78rem;
     }
 }
