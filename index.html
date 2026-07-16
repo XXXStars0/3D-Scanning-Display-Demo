@@ -57,8 +57,38 @@
                 </div>
                 <!-- 3D Viewer Controls -->
                 <div class="panel-content" style="display: flex; gap: 10px; padding-top: 10px; justify-content: flex-end;">
-                    <button id="toggle-anchors-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Hotspots</button>
-                    <button id="toggle-skybox-btn" class="mc-button" style="padding: 4px 10px; font-size: 0.85rem;">Toggle Background</button>
+                    <button
+                        id="toggle-anchors-btn"
+                        type="button"
+                        aria-pressed="true"
+                    >
+                        Hide Hotspots
+                    </button>
+                
+                    <button
+                        id="toggle-skybox-btn"
+                        type="button"
+                        aria-pressed="false"
+                    >
+                        Enable Environment
+                    </button>
+                
+                    <button id="reset-model-btn" type="button">
+                        Reset View
+                    </button>
+                
+                    <button
+                        id="toggle-auto-rotate-btn"
+                        type="button"
+                        aria-pressed="false"
+                    >
+                        Enable Auto Rotate
+                    </button>
+                </div>
+                
+                <div class="model-guide" id="model-guide">
+                    Drag to rotate · Scroll to zoom · Click markers to explore
+                </div>
                 </div>
             </div>
         </section>
