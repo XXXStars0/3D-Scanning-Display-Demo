@@ -294,22 +294,139 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Skybox Toggle Logic
+
+// === Model Control Logic ===
+
 const toggleSkyboxBtn = document.getElementById('toggle-skybox-btn');
 const toggleAnchorsBtn = document.getElementById('toggle-anchors-btn');
+const resetModelBtn = document.getElementById('reset-model-btn');
+const toggleAutoRotateBtn = document.getElementById(
+    'toggle-auto-rotate-btn'
+);
+
 const modelWrapper = document.getElementById('model-wrapper');
 
-if (toggleSkyboxBtn && modelWrapper) {
-    toggleSkyboxBtn.addEventListener('click', () => {
-        modelWrapper.classList.toggle('with-skybox');
+function getModelControlText() {
+    const uiText = window.appConfig?.uiText || {};
+
+    return {
+        hideHotspots:
+            uiText.btnHideHotspots || 'Hide Hotspots',
+
+        showHotspots:
+            uiText.btnShowHotspots || 'Show Hotspots',
+
+        enableEnvironment:
+            uiText.btnEnableEnvironment || 'Enable Environment',
+
+        disableEnvironment:
+            uiText.btnDisableEnvironment || 'Disable Environment',
+
+        enableAutoRotate:
+            uiText.btnEnableAutoRotate || 'Enable Auto Rotate',
+
+        disableAutoRotate:
+            uiText.btnDisableAutoRotate || 'Disable Auto Rotate'
+    };
+}
+
+// Show / hide hotspots
+if (toggleAnchorsBtn && modelWrapper) {
+    toggleAnchorsBtn.addEventListener('click', () => {
+        const hotspotsAreHidden =
+            modelWrapper.classList.toggle('hide-anchors');
+
+        const labels = getModelControlText();
+
+        toggleAnchorsBtn.textContent = hotspotsAreHidden
+            ? labels.showHotspots
+            : labels.hideHotspots;
+
+        toggleAnchorsBtn.setAttribute(
+            'aria-pressed',
+            String(!hotspotsAreHidden)
+        );
     });
 }
 
-if (toggleAnchorsBtn && modelWrapper) {
-    toggleAnchorsBtn.addEventListener('click', () => {
-        modelWrapper.classList.toggle('hide-anchors');
+// Enable / disable environment
+if (toggleSkyboxBtn && modelWrapper) {
+    toggleSkyboxBtn.addEventListener('click', () => {
+        const environmentIsEnabled =
+            modelWrapper.classList.toggle('with-skybox');
+
+        const labels = getModelControlText();
+
+        toggleSkyboxBtn.textContent = environmentIsEnabled
+            ? labels.disableEnvironment
+            : labels.enableEnvironment;
+
+        toggleSkyboxBtn.setAttribute(
+            'aria-pressed',
+            String(environmentIsEnabled)
+        );
     });
 }
+
+
+// Reset camera position
+if (resetModelBtn) {
+    resetModelBtn.addEventListener('click', () => {
+        const modelViewer =
+            document.getElementById('model-viewer');
+
+        if (!modelViewer) {
+            return;
+        }
+
+        const defaultView =
+            window.appConfig?.aiConfig?.actions?.default_view;
+
+        // Return the camera target to the center of the model.
+        modelViewer.cameraTarget = 'auto auto auto';
+
+        // Restore the configured default camera orbit.
+        if (defaultView) {
+            modelViewer.cameraOrbit = defaultView;
+        } else {
+            modelViewer.cameraOrbit = '0deg 75deg 105%';
+        }
+
+        modelViewer.fieldOfView = 'auto';
+
+        // Immediately update the camera when supported.
+        if (typeof modelViewer.jumpCameraToGoal === 'function') {
+            modelViewer.jumpCameraToGoal();
+        }
+    });
+}
+
+// Enable / disable automatic rotation
+if (toggleAutoRotateBtn) {
+    toggleAutoRotateBtn.addEventListener('click', () => {
+        const modelViewer =
+            document.getElementById('model-viewer');
+
+        if (!modelViewer) {
+            return;
+        }
+
+        const autoRotateIsEnabled = !modelViewer.autoRotate;
+        modelViewer.autoRotate = autoRotateIsEnabled;
+
+        const labels = getModelControlText();
+
+        toggleAutoRotateBtn.textContent = autoRotateIsEnabled
+            ? labels.disableAutoRotate
+            : labels.enableAutoRotate;
+
+        toggleAutoRotateBtn.setAttribute(
+            'aria-pressed',
+            String(autoRotateIsEnabled)
+        );
+    });
+}
+
 
 // === Hotspot Coordinate Picker (Developer Mode) ===
 // Set this to true to enable Alt+Click coordinate picking on the 3D model
