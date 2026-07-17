@@ -161,6 +161,7 @@ body {
     grid-row: 2 / 3;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 /* Minecraft GUI Panel Style */
@@ -248,17 +249,34 @@ model-viewer {
 }
 
 /* Gallery Grid */
+.gallery-section .panel,
+.gallery-section .panel-content {
+    min-height: 0;
+}
+
+.gallery-section .panel-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
 .gallery-grid {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 20px;
-    max-height: 420px; /* Restrict height to compress layout */
+    width: 100%;
+    min-height: 0;
+    /* Grow on taller displays without letting the gallery stretch the whole page. */
+    max-height: clamp(340px, 42vh, 560px);
     overflow-y: auto;
     padding-right: 10px; /* Space for scrollbar */
+    box-sizing: border-box;
 }
 
 .gallery-group {
     display: grid;
+    flex: 0 0 auto;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
@@ -593,6 +611,10 @@ a.link:hover {
         grid-column: 1 / 2;
     }
 
+    .gallery-group {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
     .banner h1 {
         font-size: 1.8rem;
         left: 15px;
@@ -612,6 +634,18 @@ a.link:hover {
     .ai-status-indicator {
         width: 10px;
         height: 10px;
+    }
+}
+
+@media (max-width: 520px) {
+    .gallery-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 340px) {
+    .gallery-group {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -1086,7 +1120,6 @@ body.theme-cornell .panel > .model-container {
 /* Ensure Gallery grid gets side bar scrolling */
 body.theme-cornell .gallery-grid {
     padding-right: 10px; /* Space for scrollbar */
-    max-height: 450px;
     overflow-y: auto;
 }
 
