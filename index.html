@@ -113,7 +113,7 @@
                 <button type="button" id="close-settings" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">X</button>
             </div>
             <div class="panel-content">
-                <p id="byok-storage-note" style="font-size: 0.9rem; color: #aaa; margin-top: 0;">Provide your own API credentials to enable the AI Guide. They are stored only in this browser's LocalStorage.</p>
+                <p id="byok-storage-note" class="byok-storage-note">Provide your own API credentials to enable the AI Guide. Browser storage is not encrypted.</p>
             
             <form class="settings-form" id="settings-form">
                 <label for="api-url" style="margin-top: 10px; display: block;">API Base URL:</label>
@@ -124,9 +124,15 @@
 
                 <label for="api-model" style="margin-top: 15px; display: block;">Model Name:</label>
                 <input type="text" id="api-model" class="mc-input" value="deepseek-v4-flash">
+
+                <label class="settings-storage-option" for="remember-api-settings">
+                    <input type="checkbox" id="remember-api-settings">
+                    <span id="remember-api-settings-label">Remember API settings on this device</span>
+                </label>
+                <p id="remember-api-settings-help" class="settings-storage-help">Leave unchecked to keep them only in this browser tab until it closes.</p>
                 
                 <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button type="button" id="reset-settings-btn" class="mc-button danger-btn" style="flex: 1;">Reset</button>
+                    <button type="button" id="clear-settings-btn" class="mc-button danger-btn" aria-label="Clear saved credentials" style="flex: 1;">Clear Saved</button>
                     <button type="button" id="test-connection-btn" class="mc-button" style="flex: 1;">Test Connection</button>
                     <button type="submit" id="save-settings-btn" class="mc-button" style="flex: 2;">Save Config</button>
                 </div>

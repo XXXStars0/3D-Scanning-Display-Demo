@@ -16,6 +16,9 @@
   "chatCleared": "Chat cleared! How can I help you?",
   "chatNoApiKey": "Please configure your API Key in the settings (gear icon) first.",
   "chatSettingsSaved": "Settings saved successfully! You can now chat.",
+  "chatSettingsSavedPersistent": "Settings saved on this device. You can now chat.",
+  "chatSettingsSavedSession": "Settings saved for this browser tab. You can now chat.",
+  "aiSettingsCleared": "Saved AI credentials were cleared from this browser.",
   "chatConnectionFailed": "Connection failed:",
   "chatResponseTruncated": "The response reached the model's output limit. Try asking for a shorter explanation.",
   "chatUnknownViewerAction": "The AI requested an unavailable model view: {action}.",
@@ -36,5 +39,8 @@
   "btnEnableAutoRotate": "Enable Auto Rotate",
   "btnDisableAutoRotate": "Disable Auto Rotate",
   "modelGuide": "Drag to rotate · Scroll to zoom · Click markers to explore",
-  "byokStorageNote": "Provide your own API credentials to enable the AI Guide. They are stored only in this browser's LocalStorage."
+  "byokStorageNote": "Provide your own API credentials to enable the AI Guide. Browser storage is not encrypted.",
+  "rememberApiSettingsLabel": "Remember API settings on this device",
+  "rememberApiSettingsHelp": "Leave unchecked to keep them only in this browser tab until it closes.",
+  "btnClearSavedCredentials": "Clear Saved"
 }

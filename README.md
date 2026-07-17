@@ -45,4 +45,4 @@ Key configuration files:
 * `data/ai_config.json` — AI guide behavior, generation settings, and camera actions
 * `data/theme.json` — active theme, colors, and fonts
 
-The AI guide uses BYOK. Values entered in **AI Settings** are stored only in that browser's `localStorage`. The browser does not read `.env`; it can remain an ignored local testing note, but must not be served or committed.
+The AI guide uses BYOK. Settings can stay in the current tab or be remembered in browser storage; browser storage is not encrypted. The browser does not read `.env`; it can remain an ignored local testing note, but must not be served or committed.

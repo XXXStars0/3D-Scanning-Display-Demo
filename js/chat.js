@@ -1,6 +1,6 @@
 /**
  * chat.js
- * Handles the AI Guide chat interface, local storage of API settings,
+ * Handles the AI Guide chat interface, browser storage of API settings,
  * and fetching from an OpenAI-compatible API to provide interactive explanations.
  */
 
@@ -14,8 +14,9 @@ const saveSettingsBtn = document.getElementById('save-settings-btn');
 const apiUrlInput = document.getElementById('api-url');
 const apiKeyInput = document.getElementById('api-key');
 const apiModelInput = document.getElementById('api-model');
+const rememberApiSettingsInput = document.getElementById('remember-api-settings');
 const settingsForm = document.getElementById('settings-form');
-const resetSettingsBtn = document.getElementById('reset-settings-btn');
+const clearSettingsBtn = document.getElementById('clear-settings-btn');
 const testConnectionBtn = document.getElementById('test-connection-btn');
 const connectionStatus = document.getElementById('connection-status');
 const aiStatusIndicator = document.getElementById('ai-status-indicator');
@@ -31,9 +32,14 @@ const clearContextBtn = document.getElementById('clear-context-btn');
 let knowledgeBase = ""; // Will store our knowledge text
 
 // Active configuration state for the current session
-let activeApiUrl = 'https://api.deepseek.com/v1/chat/completions';
+const DEFAULT_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const DEFAULT_API_MODEL = 'deepseek-v4-flash';
+const AI_STORAGE_KEYS = ['ai_api_url', 'ai_api_key', 'ai_api_model'];
+
+let activeApiUrl = DEFAULT_API_URL;
 let activeApiKey = '';
-let activeApiModel = 'deepseek-v4-flash';
+let activeApiModel = DEFAULT_API_MODEL;
+let rememberApiSettings = false;
 let lastVerifiedSignature = '';
 let currentAiStatus = 'unconfigured';
 let activeContext = null;
@@ -182,11 +188,25 @@ async function requestAi(apiUrl, apiKey, requestBody, tokenMode = 'auto') {
 // The themed icon is recreated by script.js, so apply the latest status again.
 window.addEventListener('ai-widget-rendered', () => setAiStatus(currentAiStatus));
 
-// Load configuration from LocalStorage
+function storageHasAiConfig(storage) {
+    return AI_STORAGE_KEYS.some(key => storage.getItem(key) !== null);
+}
+
+function clearAiConfigFromStorage(storage) {
+    AI_STORAGE_KEYS.forEach(key => storage.removeItem(key));
+}
+
+// Prefer tab-scoped settings when both stores contain legacy or restored values.
 function loadConfig() {
-    const savedUrl = localStorage.getItem('ai_api_url');
-    const savedKey = localStorage.getItem('ai_api_key');
-    const savedModel = localStorage.getItem('ai_api_model');
+    const savedStorage = storageHasAiConfig(sessionStorage)
+        ? sessionStorage
+        : (storageHasAiConfig(localStorage) ? localStorage : null);
+    if (!savedStorage) return;
+
+    rememberApiSettings = savedStorage === localStorage;
+    const savedUrl = savedStorage.getItem('ai_api_url');
+    const savedKey = savedStorage.getItem('ai_api_key');
+    const savedModel = savedStorage.getItem('ai_api_model');
     if (savedUrl) activeApiUrl = savedUrl;
     if (savedKey) activeApiKey = savedKey;
     if (savedModel) activeApiModel = savedModel;
@@ -197,22 +217,45 @@ function populateSettingsForm() {
     apiUrlInput.value = activeApiUrl;
     apiKeyInput.value = activeApiKey;
     apiModelInput.value = activeApiModel;
+    rememberApiSettingsInput.checked = rememberApiSettings;
 }
 
-// Save configuration to LocalStorage and update active state
+// Save to one storage scope and remove stale credentials from the other.
 function saveConfig() {
     activeApiUrl = apiUrlInput.value.trim();
     activeApiKey = apiKeyInput.value.trim();
     activeApiModel = apiModelInput.value.trim();
-    
-    localStorage.setItem('ai_api_url', activeApiUrl);
-    localStorage.setItem('ai_api_key', activeApiKey);
-    localStorage.setItem('ai_api_model', activeApiModel);
+    rememberApiSettings = rememberApiSettingsInput.checked;
+
+    const targetStorage = rememberApiSettings ? localStorage : sessionStorage;
+    const unusedStorage = rememberApiSettings ? sessionStorage : localStorage;
+    clearAiConfigFromStorage(unusedStorage);
+    targetStorage.setItem('ai_api_url', activeApiUrl);
+    targetStorage.setItem('ai_api_key', activeApiKey);
+    targetStorage.setItem('ai_api_model', activeApiModel);
     setAiStatus(activeApiKey ? (getConfigSignature() === lastVerifiedSignature ? 'verified' : 'configured') : 'unconfigured');
     
     settingsModal.style.display = 'none';
-    const msg = window.appConfig?.uiText?.chatSettingsSaved || 'Settings saved successfully! You can now chat.';
+    const uiText = window.appConfig?.uiText || {};
+    const msg = rememberApiSettings
+        ? (uiText.chatSettingsSavedPersistent || uiText.chatSettingsSaved || 'Settings saved on this device. You can now chat.')
+        : (uiText.chatSettingsSavedSession || uiText.chatSettingsSaved || 'Settings saved for this browser tab. You can now chat.');
     addMessage('System', msg);
+}
+
+function clearSavedConfig() {
+    clearAiConfigFromStorage(localStorage);
+    clearAiConfigFromStorage(sessionStorage);
+    activeApiUrl = DEFAULT_API_URL;
+    activeApiKey = '';
+    activeApiModel = DEFAULT_API_MODEL;
+    rememberApiSettings = false;
+    lastVerifiedSignature = '';
+    populateSettingsForm();
+    setAiStatus('unconfigured');
+    const message = window.appConfig?.uiText?.aiSettingsCleared
+        || 'Saved AI credentials were cleared from this browser.';
+    setConnectionFeedback('success', message);
 }
 
 async function testConnection() {
@@ -511,13 +554,7 @@ settingsForm.addEventListener('submit', (e) => {
     saveConfig();
 });
 
-resetSettingsBtn.addEventListener('click', () => {
-    // Only resets the input fields in the UI. User must click Save to apply.
-    apiUrlInput.value = 'https://api.deepseek.com/v1/chat/completions';
-    apiKeyInput.value = '';
-    apiModelInput.value = 'deepseek-v4-flash';
-    setConnectionFeedback();
-});
+clearSettingsBtn.addEventListener('click', clearSavedConfig);
 
 testConnectionBtn.addEventListener('click', testConnection);
 

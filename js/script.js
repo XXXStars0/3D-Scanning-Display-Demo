@@ -36,6 +36,9 @@ async function initializeWebsite() {
             setById('test-connection-btn', uiText.btnTestConnection);
             setById('ask-hotspot-ai', uiText.hotspotAskAiButton);
             setById('byok-storage-note', uiText.byokStorageNote);
+            setById('remember-api-settings-label', uiText.rememberApiSettingsLabel);
+            setById('remember-api-settings-help', uiText.rememberApiSettingsHelp);
+            setById('clear-settings-btn', uiText.btnClearSavedCredentials);
             if(uiText.chatInputPlaceholder && document.getElementById('chat-input')) {
                 document.getElementById('chat-input').placeholder = uiText.chatInputPlaceholder;
             }

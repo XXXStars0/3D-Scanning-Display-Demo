@@ -130,6 +130,35 @@ body {
 .connection-status.is-error { color: #cc3333; }
 .connection-status.is-testing { color: var(--mc-text-dark); }
 
+.byok-storage-note {
+    margin-top: 0;
+    color: var(--mc-text-dark);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.settings-storage-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 16px;
+    color: var(--mc-text-dark);
+    cursor: pointer;
+}
+
+.settings-storage-option input {
+    flex: 0 0 auto;
+    margin-top: 3px;
+    accent-color: #55aa55;
+}
+
+.settings-storage-help {
+    margin: 5px 0 0 24px;
+    color: #777777;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
 /* Main Grid Container - 2 Columns */
 .container {
     max-width: 1400px;
@@ -1406,6 +1435,23 @@ body.theme-cornell .hotspot-card-close {
 
 body.theme-cornell .connection-status.is-success { color: #287d28; }
 body.theme-cornell .connection-status.is-error { color: #b31b1b; }
+
+body.theme-cornell .byok-storage-note {
+    color: #555555;
+    opacity: 1;
+}
+
+body.theme-cornell .settings-storage-option {
+    color: #333333;
+}
+
+body.theme-cornell .settings-storage-option input {
+    accent-color: #b31b1b;
+}
+
+body.theme-cornell .settings-storage-help {
+    color: #666666;
+}
 
 body.theme-cornell .onboarding-panel {
     border-radius: 8px;
