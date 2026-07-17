@@ -23,7 +23,7 @@ A lightweight, responsive frontend demo for presenting 3D-scanned specimens thro
 
 ## 🛠️ Tech Stack
 
-* HTML, CSS, and vanilla JavaScript
+* HTML, CSS, and JavaScript
 * [model-viewer](https://modelviewer.dev/) for WebGL 3D rendering
 * [Marked](https://marked.js.org/) for AI response Markdown
 * [Draco](https://github.com/google/draco) compression for the optimized 3D model; the original model is archived for reference
@@ -46,3 +46,24 @@ Key configuration files:
 * `data/theme.json` — active theme, colors, and fonts
 
 The AI guide uses BYOK. Settings can stay in the current tab or be remembered in browser storage; browser storage is not encrypted. The browser does not read `.env`; it can remain an ignored local testing note, but must not be served or committed.
+
+## 📖 Documentation
+
+* [User Guide](docs/USER_GUIDE.md) — model controls, gallery browsing, AI setup, privacy, and common errors
+* [Developer and Configuration Guide](docs/DEVELOPER_GUIDE.md) — project structure, configuration fields, content updates, themes, and testing
+
+## 🔵 Credits
+
+* Built as an interactive 3D display demo for the [Cornell Creative Technology Lab](https://teaching.cornell.edu/learning-technologies/creative-technology-lab).
+* 3D rendering is powered by Google's [`<model-viewer>`](https://modelviewer.dev/), AI response Markdown by [Marked](https://marked.js.org/), and model compression by [Google Draco](https://github.com/google/draco).
+* The current browser model is an optimized version of the original 3D scan, which is archived separately for reference.
+* Minecraft-inspired visual material is used for this educational demonstration; related names and assets belong to their respective owners.
+
+## 👥 Contributors
+
+* [XXXStars0](https://github.com/XXXStars0) — project design, development and maintenance
+* **Coworker:** [Yuqing-2434](https://github.com/Yuqing-2434) — project collaborator
+
+---
+
+*2026 Creative Technology Lab · 3D Specimen Display Demo*
