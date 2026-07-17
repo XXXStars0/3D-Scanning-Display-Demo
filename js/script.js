@@ -170,17 +170,7 @@ async function initializeWebsite() {
 
                 // Local feature details work independently of the optional AI guide.
                 btn.addEventListener('click', () => {
-                    // Restore the model orientation before applying the configured hotspot view.
-                    prepareModelForFocusedView();
-
-                    // Orbit Camera and shift Target Focus
-                    if (hotspotData.position) {
-                        modelViewer.cameraTarget = hotspotData.position;
-                    }
-                    if (hotspotData.orbit) {
-                        modelViewer.cameraOrbit = hotspotData.orbit;
-                        modelViewer.fieldOfView = 'auto';
-                    }
+                    executeViewerAction(hotspotData.id || hotspotData.slot);
                     showHotspotInfo(hotspotData);
                 });
 
@@ -543,9 +533,71 @@ function prepareModelForFocusedView() {
     }
 }
 
-// Let AI camera actions follow the same behavior as local hotspot clicks.
+// Resolve only configured actions so AI output cannot provide arbitrary camera values.
+function getViewerActionDefinition(actionId) {
+    const hotspots = window.appConfig?.hotspots || [];
+    const hotspot = hotspots.find(item => item.id === actionId || item.slot === actionId);
+    if (hotspot) {
+        return {
+            id: hotspot.id || actionId,
+            label: hotspot.label || actionId,
+            target: hotspot.position,
+            orbit: hotspot.orbit
+        };
+    }
+
+    const configuredAction = window.appConfig?.aiConfig?.actions?.[actionId];
+    const fallbackOrbit = actionId === 'default_view' ? '0deg 80deg 1.4m' : null;
+    if (!configuredAction && !fallbackOrbit) return null;
+
+    if (configuredAction && typeof configuredAction === 'object') {
+        return {
+            id: actionId,
+            label: configuredAction.label || actionId,
+            target: configuredAction.target || configuredAction.cameraTarget || 'auto auto auto',
+            orbit: configuredAction.orbit || configuredAction.cameraOrbit
+        };
+    }
+
+    if (typeof configuredAction === 'string' || fallbackOrbit) {
+        return {
+            id: actionId,
+            label: actionId === 'default_view' ? 'Default View' : actionId,
+            target: 'auto auto auto',
+            orbit: configuredAction || fallbackOrbit
+        };
+    }
+
+    return null;
+}
+
+function executeViewerAction(actionId, options = {}) {
+    if (!controlledModelViewer || typeof actionId !== 'string') {
+        return { ok: false, reason: 'viewer-unavailable' };
+    }
+
+    const action = getViewerActionDefinition(actionId.trim());
+    if (!action || (!action.target && !action.orbit)) {
+        return { ok: false, reason: 'unknown-action', actionId };
+    }
+
+    prepareModelForFocusedView();
+    if (action.target) controlledModelViewer.cameraTarget = action.target;
+    if (action.orbit) controlledModelViewer.cameraOrbit = action.orbit;
+    controlledModelViewer.fieldOfView = 'auto';
+
+    if (options.immediate && typeof controlledModelViewer.jumpCameraToGoal === 'function') {
+        controlledModelViewer.jumpCameraToGoal();
+    }
+
+    updateModelControlButtons();
+    return { ok: true, action };
+}
+
+// Let chat.js and other UI controls use the same validated camera action path.
 window.pauseModelAutoRotate = pauseModelAutoRotate;
 window.prepareModelForFocusedView = prepareModelForFocusedView;
+window.executeViewerAction = executeViewerAction;
 
 if (toggleSkyboxBtn && modelWrapper) {
     toggleSkyboxBtn.addEventListener('click', () => {
@@ -570,16 +622,7 @@ if (toggleAutoRotateBtn && controlledModelViewer) {
 
 if (resetModelBtn && controlledModelViewer) {
     resetModelBtn.addEventListener('click', () => {
-        // Reset both the camera and any turntable rotation created by auto-rotate.
-        prepareModelForFocusedView();
-
-        controlledModelViewer.cameraTarget = 'auto auto auto';
-        controlledModelViewer.cameraOrbit = window.appConfig?.aiConfig?.actions?.default_view || '0deg 80deg 1.4m';
-        controlledModelViewer.fieldOfView = 'auto';
-        if (typeof controlledModelViewer.jumpCameraToGoal === 'function') {
-            controlledModelViewer.jumpCameraToGoal();
-        }
-        updateModelControlButtons();
+        executeViewerAction('default_view', { immediate: true });
     });
 }
 

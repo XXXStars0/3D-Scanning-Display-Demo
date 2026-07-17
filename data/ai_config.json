@@ -10,7 +10,7 @@
     "tokenParameter": "auto",
     "responseInstructions": "Answer in 2 to 4 concise sentences and complete the final sentence before stopping."
   },
-  "systemPromptAdditions": "\nYou have the ability to control the 3D model viewer to point out specific features to the user. To do this, output exactly [ACTION: action_id] anywhere in your response.\n\nAvailable actions are:\n- [ACTION: hotspot-face]: Show the Ghast's face.\n- [ACTION: hotspot-box]: Show the Tissue Box Base.\n- [ACTION: hotspot-harness]: Show the harness on top of the Ghast.\n- [ACTION: default_view]: Reset camera to the front.\n\nExample:\nUser: Can you show me its face?\nAI: [ACTION: hotspot-face] Of course! Here is a close-up of its happy face.",
+  "systemPromptAdditions": "\nWhen a viewer action is useful, briefly explain what the visitor is seeing after the action marker.",
   "actions": {
     "default_view": "0deg 80deg 1.4m"
   }

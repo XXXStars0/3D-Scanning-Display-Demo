@@ -18,6 +18,7 @@
   "chatSettingsSaved": "Settings saved successfully! You can now chat.",
   "chatConnectionFailed": "Connection failed:",
   "chatResponseTruncated": "The response reached the model's output limit. Try asking for a shorter explanation.",
+  "chatUnknownViewerAction": "The AI requested an unavailable model view: {action}.",
   "btnTestConnection": "Test Connection",
   "aiTestingConnection": "Testing connection…",
   "aiConnectionSuccess": "Connection verified. Save this configuration to use it in the guide.",

@@ -283,6 +283,57 @@ function addMessage(sender, text) {
     chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to bottom
 }
 
+// Build the available camera actions from the same configuration used by the viewer.
+function buildViewerActionInstructions() {
+    const actionLines = [];
+    const knownActionIds = new Set();
+    const hotspots = window.appConfig?.hotspots || [];
+
+    hotspots.forEach(hotspot => {
+        const actionId = hotspot.id || hotspot.slot;
+        if (!actionId || knownActionIds.has(actionId)) return;
+        knownActionIds.add(actionId);
+        const description = hotspot.aiActionDescription || `Focus on ${hotspot.label || actionId}`;
+        actionLines.push(`- [ACTION: ${actionId}]: ${description}.`);
+    });
+
+    const configuredActions = window.appConfig?.aiConfig?.actions || {};
+    Object.entries(configuredActions).forEach(([actionId, actionConfig]) => {
+        if (knownActionIds.has(actionId)) return;
+        knownActionIds.add(actionId);
+        const configuredDescription = actionConfig && typeof actionConfig === 'object'
+            ? actionConfig.description || actionConfig.label
+            : '';
+        const description = configuredDescription
+            || (actionId === 'default_view' ? 'Reset the camera to the default view' : `Show the configured ${actionId} view`);
+        actionLines.push(`- [ACTION: ${actionId}]: ${description}.`);
+    });
+
+    if (actionLines.length === 0) return '';
+    return `You can control the 3D viewer with one optional action marker.
+Use an action only when the visitor asks to show, focus on, or reset a model view, or when moving the camera directly helps the answer.
+Output at most one action marker per response, use an exact ID from the list, and never invent action IDs.
+
+Available viewer actions:
+${actionLines.join('\n')}
+
+Example: [ACTION: ${hotspots[0]?.id || hotspots[0]?.slot || 'default_view'}] Here is the requested view.`;
+}
+
+// Do not briefly expose a still-streaming action marker in the visible reply.
+function hideIncompleteViewerAction(text) {
+    const lastOpenBracket = text.lastIndexOf('[');
+    if (lastOpenBracket < 0 || text.indexOf(']', lastOpenBracket) >= 0) return text;
+
+    const fragment = text.slice(lastOpenBracket);
+    const compactFragment = fragment.replace(/\s+/g, '').toUpperCase();
+    const actionPrefix = '[ACTION:';
+    if (actionPrefix.startsWith(compactFragment) || compactFragment.startsWith(actionPrefix)) {
+        return text.slice(0, lastOpenBracket);
+    }
+    return text;
+}
+
 // Send message to LLM via API
 async function sendMessage() {
     const text = chatInput.value.trim();
@@ -318,6 +369,7 @@ async function sendMessage() {
     try {
         // Construct the System Prompt with the injected Knowledge Base
         const aiPromptAdds = window.appConfig?.aiConfig?.systemPromptAdditions || '';
+        const viewerActionInstructions = buildViewerActionInstructions();
         const responseInstructions = getGenerationConfig().responseInstructions;
         const systemPrompt = `You are an expert museum guide for this 3D specimen display. 
 You are enthusiastic, slightly humorous, and speak in a Minecraft-inspired tone.
@@ -325,6 +377,7 @@ Answer using the specimen Knowledge Base and any curated hotspot or gallery cont
 Curated gallery context is text prepared by the exhibit author; do not claim that you directly viewed an image.
 If a detail is unavailable, discuss relevant documented facts without inventing visual details. Keep your answers concise and engaging.
 ${responseInstructions}
+${viewerActionInstructions}
 ${aiPromptAdds}
 
 --- KNOWLEDGE BASE ---
@@ -358,48 +411,37 @@ ${knowledgeBase}`;
         let rawContent = ''; // Accumulate the raw markdown
         let streamBuffer = ''; // Preserve an incomplete SSE line between network chunks
         let hitTokenLimit = false;
+        let viewerActionExecuted = false;
+        const handledActionIds = new Set();
+        const unavailableActionIds = new Set();
 
         const renderAssistantResponse = () => {
-            // Check and execute [ACTION: id] camera commands
+            // Execute each complete, allowlisted camera action at most once per response.
             const actionRegex = /\[\s*ACTION\s*:\s*([^\]]+)\s*\]/ig;
             let match;
-            let displayContent = rawContent;
             while ((match = actionRegex.exec(rawContent)) !== null) {
                 const actionId = match[1].trim();
-                const modelViewer = document.getElementById('model-viewer');
+                if (!actionId || handledActionIds.has(actionId)) continue;
+                handledActionIds.add(actionId);
 
-                if (modelViewer && window.appConfig) {
-                    let targetOrbit = null;
-
-                    // 1. Check if action matches a hotspot ID
-                    const hotspots = window.appConfig.hotspots || [];
-                    const hotspot = hotspots.find(h => h.id === actionId || h.slot === actionId);
-                    if (hotspot) {
-                        if (hotspot.position) modelViewer.cameraTarget = hotspot.position;
-                        if (hotspot.orbit) targetOrbit = hotspot.orbit;
-                    }
-
-                    // 2. Check if action matches aiConfig generic actions
-                    if (!hotspot && window.appConfig.aiConfig?.actions) {
-                        const actionVal = window.appConfig.aiConfig.actions[actionId];
-                        if (actionVal) {
-                            modelViewer.cameraTarget = 'auto auto auto';
-                            targetOrbit = actionVal;
-                        }
-                    }
-
-                    if (targetOrbit) {
-                        // Restore the base orientation so configured hotspot views remain accurate.
-                        if (typeof window.prepareModelForFocusedView === 'function') {
-                            window.prepareModelForFocusedView();
-                        }
-                        modelViewer.cameraOrbit = targetOrbit;
-                        modelViewer.fieldOfView = 'auto';
-                    }
+                if (viewerActionExecuted) {
+                    console.warn(`Ignored additional viewer action: ${actionId}`);
+                    continue;
                 }
-                displayContent = displayContent.replace(match[0], '');
+
+                const result = typeof window.executeViewerAction === 'function'
+                    ? window.executeViewerAction(actionId, { source: 'ai' })
+                    : { ok: false, reason: 'viewer-unavailable' };
+                if (result.ok) {
+                    viewerActionExecuted = true;
+                } else {
+                    unavailableActionIds.add(actionId.slice(0, 80));
+                    console.warn(`Ignored unavailable viewer action: ${actionId}`);
+                }
             }
 
+            let displayContent = rawContent.replace(/\[\s*ACTION\s*:\s*([^\]]+)\s*\]/ig, '');
+            displayContent = hideIncompleteViewerAction(displayContent);
             msgDiv.innerHTML = '<strong>[Guide]</strong> <br>' + marked.parse(displayContent);
             chatHistory.scrollTop = chatHistory.scrollHeight;
         };
@@ -432,6 +474,12 @@ ${knowledgeBase}`;
 
         streamBuffer += decoder.decode();
         if (streamBuffer.trim()) processSseLine(streamBuffer);
+        if (unavailableActionIds.size > 0) {
+            const actionNames = [...unavailableActionIds].join(', ');
+            const notice = window.appConfig?.uiText?.chatUnknownViewerAction
+                || 'The AI requested an unavailable model view: {action}.';
+            addMessage('System', notice.replace('{action}', actionNames));
+        }
         if (hitTokenLimit) {
             const notice = window.appConfig?.uiText?.chatResponseTruncated || 'The AI response reached its length limit. Ask a follow-up question to continue.';
             addMessage('System', notice);
