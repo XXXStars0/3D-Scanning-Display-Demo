@@ -162,15 +162,15 @@
     <!-- Floating AI Widget -->
     <div id="ai-widget">
         <!-- Floating Chat Panel -->
-        <div id="floating-chat-panel" class="panel chat-panel hidden">
+        <div id="floating-chat-panel" class="panel chat-panel hidden" role="region" aria-labelledby="ai-guide-title" aria-hidden="true">
             <div class="panel-header chat-header">
                 <div class="chat-title-with-status">
-                    <h2>AI Guide</h2>
+                    <h2 id="ai-guide-title">AI Guide</h2>
                     <span id="ai-status-indicator" class="ai-status-indicator is-unconfigured" role="status" aria-label="AI not configured" title="AI not configured"></span>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <button id="clear-chat" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">Clear</button>
-                    <button id="close-chat" class="mc-button danger-btn" style="padding: 4px 10px; font-size: 0.85rem;">X</button>
+                    <button id="close-chat" class="mc-button danger-btn" aria-label="Close AI Guide" style="padding: 4px 10px; font-size: 0.85rem;">X</button>
                 </div>
             </div>
             <div id="chat-history" class="chat-history" style="flex-grow:1; margin: 0 15px 15px 15px; padding: 12px; overflow-y: auto;">
@@ -187,13 +187,13 @@
         </div>
         
         <!-- Floating Chat Button -->
-        <div id="ai-chat-btn" class="ai-chat-btn">
-            <span class="tooltip">
+        <button type="button" id="ai-chat-btn" class="ai-chat-btn" aria-label="Open AI Guide" aria-controls="floating-chat-panel" aria-expanded="false" aria-describedby="ai-chat-tooltip">
+            <span id="ai-chat-tooltip" class="tooltip" role="tooltip">
                 <span id="ai-chat-tooltip-label" class="ai-chat-tooltip-label">Need a Guide?</span>
                 <span id="ai-tooltip-status" class="ai-tooltip-status is-unconfigured">● AI not configured</span>
             </span>
-            <img src="img/Happy_ghast_idle_animation_(pixel_art).gif" alt="AI Guide" class="flipped-ghast">
-        </div>
+            <img src="img/Happy_ghast_idle_animation_(pixel_art).gif" alt="" aria-hidden="true" class="flipped-ghast">
+        </button>
     </div>
 
     <!-- Load dependencies -->

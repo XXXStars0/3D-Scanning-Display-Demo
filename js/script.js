@@ -51,6 +51,14 @@ async function initializeWebsite() {
             
             const tooltipGuide = document.getElementById('ai-chat-tooltip-label');
             if (tooltipGuide && uiText.chatTooltipGuide) tooltipGuide.textContent = uiText.chatTooltipGuide;
+            const aiChatButton = document.getElementById('ai-chat-btn');
+            if (aiChatButton) {
+                const chatIsOpen = aiChatButton.getAttribute('aria-expanded') === 'true';
+                const buttonLabel = chatIsOpen ? uiText.chatButtonCloseLabel : uiText.chatButtonOpenLabel;
+                if (buttonLabel) aiChatButton.setAttribute('aria-label', buttonLabel);
+            }
+            const closeChatButton = document.getElementById('close-chat');
+            if (closeChatButton && uiText.chatCloseButtonLabel) closeChatButton.setAttribute('aria-label', uiText.chatCloseButtonLabel);
 
             const posterText = document.getElementById('poster-text');
             if (posterText && uiText.loadingModelText) posterText.textContent = uiText.loadingModelText;
@@ -92,7 +100,7 @@ async function initializeWebsite() {
                 const aiBtn = document.getElementById('ai-chat-btn');
                 if (aiBtn) {
                     const tooltipText = window.appConfig.uiText?.chatTooltipGuide || 'Click to ask AI';
-                    aiBtn.innerHTML = `<div class="chat-icon-emoji">${activeThemeData.chatIcon}</div><div class="tooltip"><span id="ai-chat-tooltip-label" class="ai-chat-tooltip-label">${tooltipText}</span><span id="ai-tooltip-status" class="ai-tooltip-status is-unconfigured">● AI not configured</span></div>`;
+                    aiBtn.innerHTML = `<span class="chat-icon-emoji" aria-hidden="true">${activeThemeData.chatIcon}</span><span id="ai-chat-tooltip" class="tooltip" role="tooltip"><span id="ai-chat-tooltip-label" class="ai-chat-tooltip-label">${tooltipText}</span><span id="ai-tooltip-status" class="ai-tooltip-status is-unconfigured">● AI not configured</span></span>`;
                     // Let chat.js restore the current AI status after the themed icon is rendered.
                     window.dispatchEvent(new Event('ai-widget-rendered'));
                 }

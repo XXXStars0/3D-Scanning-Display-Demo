@@ -716,13 +716,25 @@ a.link:hover {
 .ai-chat-btn {
     --ai-icon-half-width: 80px;
     position: relative;
+    appearance: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     cursor: pointer;
     transition: transform 0.2s;
     margin-top: 15px;
 }
 
-.ai-chat-btn:hover {
+.ai-chat-btn:hover,
+.ai-chat-btn:focus-visible {
     transform: scale(1.1);
+}
+
+.ai-chat-btn:focus-visible {
+    outline: 3px solid var(--mc-border-light);
+    outline-offset: 4px;
 }
 
 .flipped-ghast {
@@ -809,7 +821,8 @@ a.link:hover {
     border-color: var(--mc-border-dark) transparent transparent transparent;
 }
 
-.ai-chat-btn:hover .tooltip {
+.ai-chat-btn:hover .tooltip,
+.ai-chat-btn:focus-visible .tooltip {
     visibility: visible;
     opacity: 1;
 }
@@ -1304,6 +1317,10 @@ body.theme-cornell .tooltip::after {
 
 body.theme-cornell .ai-chat-btn {
     --ai-icon-half-width: 30px;
+}
+
+body.theme-cornell .ai-chat-btn:focus-visible {
+    outline-color: #b31b1b;
 }
 
 body.theme-cornell .active-context {

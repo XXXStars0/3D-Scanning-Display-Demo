@@ -480,16 +480,35 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Floating Widget Logic
-aiChatBtn.addEventListener('click', () => {
-    floatingChatPanel.classList.toggle('hidden');
-    if (!floatingChatPanel.classList.contains('hidden')) {
-        chatInput.focus();
+// Keep visual and accessibility state synchronized for every way the panel opens.
+function setChatPanelOpen(isOpen, focusTarget = true) {
+    const uiText = window.appConfig?.uiText || {};
+
+    // Move focus out before hiding a panel that currently contains it.
+    if (!isOpen && focusTarget) aiChatBtn.focus();
+
+    floatingChatPanel.classList.toggle('hidden', !isOpen);
+    floatingChatPanel.setAttribute('aria-hidden', String(!isOpen));
+    aiChatBtn.setAttribute('aria-expanded', String(isOpen));
+    aiChatBtn.setAttribute('aria-label', isOpen
+        ? (uiText.chatButtonCloseLabel || 'Close AI Guide')
+        : (uiText.chatButtonOpenLabel || 'Open AI Guide'));
+
+    if (focusTarget) {
+        if (isOpen) chatInput.focus();
     }
+}
+
+aiChatBtn.addEventListener('click', () => {
+    setChatPanelOpen(floatingChatPanel.classList.contains('hidden'));
 });
 
-closeChatBtn.addEventListener('click', () => {
-    floatingChatPanel.classList.add('hidden');
+closeChatBtn.addEventListener('click', () => setChatPanelOpen(false));
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !floatingChatPanel.classList.contains('hidden')) {
+        setChatPanelOpen(false);
+    }
 });
 
 clearChatBtn.addEventListener('click', () => {
@@ -505,7 +524,7 @@ clearContextBtn.addEventListener('click', clearActiveContext);
 window.triggerHotspotAI = function(promptText, contextualPrompt = '', contextInfo = {}) {
     // Open chat panel if closed
     if (floatingChatPanel.classList.contains('hidden')) {
-        floatingChatPanel.classList.remove('hidden');
+        setChatPanelOpen(true, false);
     }
     
     // Set input and send
