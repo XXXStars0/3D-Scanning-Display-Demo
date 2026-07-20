@@ -45,7 +45,7 @@ Key configuration files:
 * `data/ai_config.json` — AI guide behavior, generation settings, and camera actions
 * `data/theme.json` — active theme, colors, and fonts
 
-The AI guide uses BYOK. Settings can stay in the current tab or be remembered in browser storage; browser storage is not encrypted. The browser does not read `.env`; it can remain an ignored local testing note, but must not be served or committed.
+The AI guide deliberately uses BYOK. Visitors provide their own compatible endpoint, key, and model; the repository does not include or read `.env`. `.gitignore` excludes local environment files as an additional safeguard, but this static site has no server-side secret storage. Settings can stay in the current tab or be remembered in browser storage, which is not encrypted.
 
 ## 📖 Documentation
 

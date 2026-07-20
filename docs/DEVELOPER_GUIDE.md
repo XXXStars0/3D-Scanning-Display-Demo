@@ -69,6 +69,14 @@ Gallery images should include the following fields:
 
 Reference images and creative photographs should use separate categories. Write `visualFacts` as concrete observations rather than asking the model to infer unseen image details.
 
+#### Content Authoring Rules
+
+* Keep hotspot and image `id` values unique and stable after publication.
+* Use relative asset paths and preserve filename capitalization for GitHub Pages.
+* Match every image `category` to a key in `galleryCategories`.
+* Keep local descriptions concise and write `visualFacts` only from details that can be confirmed from the image or exhibit record.
+* Update the gallery image context and `data/knowledge.md` together when a new specimen needs different factual coverage.
+
 ### Interface Text and Onboarding
 
 Use `data/ui_text.json` for short interface labels, status messages, and reusable error text. Use `data/onboarding.json` for the How to Use title, introduction, ordered steps, and dismiss button. Keeping these strings outside JavaScript makes content updates and future localization easier.
@@ -76,6 +84,11 @@ Use `data/ui_text.json` for short interface labels, status messages, and reusabl
 ### Themes
 
 Set `activeTheme` in `data/theme.json` to `minecraft`, `cornell`, or another configured theme. Each theme defines its name, colors, fonts, and optional chat icon.
+
+<p align="center">
+  <img src="assets/img_site.webp" alt="Minecraft theme applied to the specimen interface" width="48%">
+  <img src="assets/img_site_theme_alt.webp" alt="Cornell theme applied to the same specimen interface" width="48%">
+</p>
 
 When adding a theme:
 
@@ -121,6 +134,10 @@ Keep `data/knowledge.md` focused on verified specimen facts, scan context, visib
 
 The current model is Draco-optimized for web delivery. Keep any large original scan archived separately and publish only the optimized model when possible.
 
+#### Model Resource Convention
+
+Store the browser-ready optimized model in `models/` and reference it through `modelUrl`. Keep source scans or other large working files outside the deployed asset path when possible. A replacement model requires a new hotspot pass because positions, normals, and camera orbits are specific to its geometry and scale.
+
 ### Add a Gallery Image
 
 1. Add the image under `img/`.
@@ -132,6 +149,33 @@ The current model is Draco-optimized for web delivery. Keep any large original s
 
 Update its content and camera configuration together. If an ID changes, also review prompts or documentation that refer to its viewer action. Selecting a hotspot should pause auto-rotation and focus the intended feature from any previous turntable angle.
 
+Use this workflow for a new hotspot:
+
+1. Pick a surface coordinate with the developer coordinate picker.
+2. Paste the generated template into `data/content.json`.
+3. Replace placeholder text and add the local `description`.
+4. Adjust `orbit` until the selected feature is clearly visible.
+5. Test the hotspot after rotating the model and with auto-rotation enabled.
+
+### Pick Hotspot Coordinates (Developer Mode)
+
+The model includes a coordinate picker to speed up hotspot placement. With `DEBUG_MODE` enabled in `js/script.js`, hold `Alt` (`Option` on macOS) and click a point on the 3D model. A confirmation dialog shows the picked position, and the browser console (`F12`) prints a JSON hotspot template that can be pasted into `data/content.json`.
+
+<p align="center">
+  <img src="assets/img_debug_1.webp" alt="Coordinate picker confirmation dialog" width="620">
+</p>
+
+The generated template contains a unique `id` and `slot`, plus the clicked surface `position`, `normal`, a placeholder `label`, `prompt`, and a starting camera `orbit`. It reports the clicked surface coordinates rather than complete model metadata or the current camera state.
+
+<p align="center">
+  <img src="assets/img_debug_2.webp" alt="Console output for a generated hotspot configuration" width="680">
+</p>
+
+After pasting the template, replace the placeholder label and prompt, add a local `description`, and adjust the camera orbit as needed. Test the marker from several model rotations before treating the position as final.
+
+> [!NOTE]
+> The coordinate picker is intended for authoring. Set `DEBUG_MODE` to `false` before a public release if visitors should not be able to trigger the Alt+click dialog or see configuration output in their browser console.
+
 ## Testing Checklist
 
 * Serve the site through HTTP and check the browser console.
@@ -141,12 +185,6 @@ Update its content and camera configuration together. If an ID changes, also rev
 * Test hotspots after the model has auto-rotated.
 * Test gallery navigation and active AI context.
 * Test BYOK session storage, remembered storage, connection status, and clearing credentials.
-* Never commit `.env`, API keys, or other private credentials.
+* Never commit API keys or other private credentials. The repository does not use `.env` at runtime; `.gitignore` excludes `.env` and `.env.local` as a local safety measure.
 
 GitHub Pages can deploy the repository as static files; no build step is required. Keep asset paths relative and preserve filename capitalization for case-sensitive hosting.
-
-## Contributions and Credits
-
-Keep implementation changes small and readable, preserve the existing comment style, and prefer configuration updates over JavaScript changes when the behavior already exists. Test both themes before opening a pull request.
-
-Project participants and their GitHub profiles are listed in the README **Contributors** section. Add asset, model, font, or library attribution to README **Credits** when introducing new material.
